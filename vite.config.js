@@ -1,6 +1,6 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import { createPrivateKey, createSign, randomBytes } from 'crypto'
+import { generateJwt } from '@coinbase/cdp-sdk/auth'
 
 function coinbaseApiPlugin() {
   return {
@@ -31,71 +31,35 @@ function coinbaseApiPlugin() {
               cleanKey = cleanKey.replace(/\\n/g, '\n');
             }
 
-            // Support either SEC1 (BEGIN EC PRIVATE KEY) or PKCS#8 (BEGIN PRIVATE KEY)
-            const keyObj = createPrivateKey(cleanKey);
+            // Generate JWT using @coinbase/cdp-sdk/auth which supports Ed25519 and ES256 natively
+            const token = await generateJwt({
+              apiKeyId: keyName.trim(),
+              apiKeySecret: cleanKey,
+              requestMethod: 'GET',
+              requestHost: 'api.coinbase.com',
+              requestPath: '/api/v3/brokerage/accounts'
+            });
 
-            let allAccounts = [];
-            let hasNext = true;
-            let cursor = '';
-
-            // Fetch up to 3 pages (up to 750 accounts)
-            let pageCount = 0;
-            while (hasNext && pageCount < 3) {
-              pageCount++;
-              const now = Math.floor(Date.now() / 1000);
-              const path = cursor
-                ? `/api/v3/brokerage/accounts?limit=250&cursor=${encodeURIComponent(cursor)}`
-                : `/api/v3/brokerage/accounts?limit=250`;
-
-              const header = {
-                alg: 'ES256',
-                typ: 'JWT',
-                kid: keyName.trim(),
-                nonce: randomBytes(16).toString('hex')
-              };
-              const payload = {
-                iss: 'cdp',
-                nbf: now,
-                exp: now + 120,
-                sub: keyName.trim(),
-                uri: `GET api.coinbase.com${path}`
-              };
-
-              const b64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
-              const b64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-              const sign = createSign('SHA256');
-              sign.update(`${b64Header}.${b64Payload}`);
-              sign.end();
-              const signature = sign.sign({ key: keyObj, dsaEncoding: 'ieee-p1363' });
-              const token = `${b64Header}.${b64Payload}.${signature.toString('base64url')}`;
-
-              const cbRes = await fetch(`https://api.coinbase.com${path}`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept': 'application/json'
-                }
-              });
-
-              if (!cbRes.ok) {
-                const errText = await cbRes.text();
-                res.statusCode = cbRes.status;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: `Coinbase API error (${cbRes.status}): ${errText}` }));
-                return;
+            // Fetch accounts from Coinbase Advanced Trade / Brokerage
+            const cbRes = await fetch('https://api.coinbase.com/api/v3/brokerage/accounts?limit=250', {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
               }
+            });
 
-              const data = await cbRes.json();
-              if (Array.isArray(data.accounts)) {
-                allAccounts.push(...data.accounts);
-              }
-
-              hasNext = !!data.has_next && !!data.cursor;
-              cursor = data.cursor || '';
+            if (!cbRes.ok) {
+              const errText = await cbRes.text();
+              res.statusCode = cbRes.status;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: `Coinbase API error (${cbRes.status}): ${errText}` }));
+              return;
             }
 
+            const data = await cbRes.json();
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ accounts: allAccounts }));
+            res.end(JSON.stringify({ accounts: data.accounts || [] }));
           } catch (err) {
             console.error('Error in /api/coinbase/accounts handler:', err);
             res.statusCode = 500;

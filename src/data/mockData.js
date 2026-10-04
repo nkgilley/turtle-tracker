@@ -28,7 +28,17 @@ export const INITIAL_MARKET_PRICES = {
   BONK: { price: 0.0000215, change24h: 4.4, name: 'Bonk', symbol: 'BONK', chain: 'SOL' },
   MAX: { price: 0.0000018, change24h: 5.2, name: 'Max Token', symbol: 'MAX', chain: 'HL' },
   LATINA: { price: 0.0012, change24h: -1.4, name: 'Latina', symbol: 'LATINA', chain: 'HL' },
-  NXM: { price: 68.20, change24h: 0.50, name: 'Nexus Mutual', symbol: 'NXM', chain: 'ETH' }
+  NXM: { price: 68.20, change24h: 0.50, name: 'Nexus Mutual', symbol: 'NXM', chain: 'ETH' },
+  USD: { price: 1.00, change24h: 0.00, name: 'US Dollar', symbol: 'USD', chain: 'COINBASE' },
+  DIMO: { price: 0.165, change24h: 1.20, name: 'DIMO', symbol: 'DIMO', chain: 'COINBASE' },
+  AMP: { price: 0.0045, change24h: 0.80, name: 'Amp', symbol: 'AMP', chain: 'COINBASE' },
+  ZETA: { price: 0.58, change24h: 2.10, name: 'ZetaChain', symbol: 'ZETA', chain: 'COINBASE' },
+  POL: { price: 0.38, change24h: -0.50, name: 'Polygon', symbol: 'POL', chain: 'COINBASE' },
+  DOGE: { price: 0.22, change24h: 3.40, name: 'Dogecoin', symbol: 'DOGE', chain: 'COINBASE' },
+  AAVE: { price: 175.50, change24h: 1.90, name: 'Aave', symbol: 'AAVE', chain: 'ETH' },
+  XLM: { price: 0.28, change24h: 0.40, name: 'Stellar Lumens', symbol: 'XLM', chain: 'COINBASE' },
+  TIA: { price: 4.85, change24h: -1.20, name: 'Celestia', symbol: 'TIA', chain: 'COINBASE' },
+  CLV: { price: 0.042, change24h: 0.00, name: 'Clover Finance', symbol: 'CLV', chain: 'COINBASE' }
 };
 
 export const INITIAL_DEMO_WALLETS = [

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.57.1",
     "@solana/web3.js": "^1.99.0",
     "jose": "^6.2.12",
     "lucide-react": "^1.52.0",

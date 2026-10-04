@@ -236,7 +236,8 @@ export async function fetchCoinbaseAccount(identifier, privateKey = null) {
 
   // 1. Attempt live request via Vite dev proxy middleware
   try {
-    const res = await fetch('/api/coinbase/accounts', {
+    const endpoint = typeof window !== 'undefined' ? '/api/coinbase/accounts' : 'http://localhost:5173/api/coinbase/accounts';
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keyName: identifier, privateKey: privateKey })
@@ -245,12 +246,12 @@ export async function fetchCoinbaseAccount(identifier, privateKey = null) {
     if (res.ok) {
       const data = await res.json();
       return parseCoinbaseAccounts(data.accounts || []);
-    } else if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 500) {
+    } else {
       const errData = await res.json().catch(() => ({}));
       throw new Error(errData.error || `Coinbase API error (${res.status})`);
     }
   } catch (err) {
-    if (err.message && (err.message.includes('Coinbase API') || err.message.includes('Key Name'))) {
+    if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('Invalid URL') && !err.message.includes('ECONNREFUSED')) {
       throw err;
     }
     console.warn('Vite proxy not available, attempting direct browser call:', err);
