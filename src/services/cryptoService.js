@@ -1,4 +1,4 @@
-import { INITIAL_MARKET_PRICES } from '../data/mockData.js';
+import { INITIAL_MARKET_PRICES, getNetworkInfo } from '../data/mockData.js';
 import { PublicKey } from '@solana/web3.js';
 import { SignJWT, importPKCS8 } from 'jose';
 
@@ -840,6 +840,8 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
   let totalLiquidValue = 0;
   let totalAnnualYield = 0;
 
+  const networkTotalsMap = {};
+
   const chainTotals = {
     BTC: { id: 'BTC', name: 'Bitcoin', color: '#F7931A', value: 0, percentage: 0 },
     ETH: { id: 'ETH', name: 'Ethereum & ERC-20', color: '#627EEA', value: 0, percentage: 0 },
@@ -863,6 +865,26 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
       totalNetWorth += assetValue;
       total24hChangeValue += asset24hChange;
 
+      // Accumulate into dynamic network totals (only networks with assets)
+      const netInfo = getNetworkInfo(asset.network || wallet.chain);
+      const netId = netInfo.id;
+      if (!networkTotalsMap[netId]) {
+        networkTotalsMap[netId] = {
+          id: netId,
+          name: netInfo.name,
+          symbol: netInfo.symbol,
+          color: netInfo.color,
+          sliceColor: netInfo.sliceColor,
+          icon: netInfo.icon,
+          desc: netInfo.desc,
+          value: 0,
+          percentage: 0,
+          assetCount: 0
+        };
+      }
+      networkTotalsMap[netId].value += assetValue;
+      networkTotalsMap[netId].assetCount += 1;
+
       if (asset.isStaked) {
         totalStakedValue += assetValue;
         let effectiveApy = asset.apy || 0;
@@ -877,6 +899,7 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
           walletLabel: wallet.label,
           walletAddress: wallet.address,
           chain: wallet.chain,
+          network: asset.network || (wallet.chain === 'ETH' ? 'Ethereum' : wallet.chain),
           symbol: asset.symbol,
           name: priceData.name,
           balance: asset.balance,
@@ -920,6 +943,15 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
     });
   });
 
+  // Calculate percentages for dynamic networks and sort by value
+  const networkTotals = Object.values(networkTotalsMap)
+    .filter(n => n.value > 0.0001 || n.assetCount > 0)
+    .map(n => ({
+      ...n,
+      percentage: totalNetWorth > 0 ? (n.value / totalNetWorth) * 100 : 0
+    }))
+    .sort((a, b) => b.value - a.value);
+
   Object.keys(chainTotals).forEach(chainKey => {
     chainTotals[chainKey].percentage = totalNetWorth > 0
       ? (chainTotals[chainKey].value / totalNetWorth) * 100
@@ -946,6 +978,7 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
     totalAnnualYield,
     averageStakingApy,
     chainTotals,
+    networkTotals,
     flattenedAssets,
     stakingPositions
   };

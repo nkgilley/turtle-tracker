@@ -7,6 +7,52 @@ export const SUPPORTED_CHAINS = [
   { id: 'COINBASE', name: 'Coinbase', symbol: 'COIN', color: '#1d4ed8', icon: '🔵', explorer: 'https://coinbase.com' },
 ];
 
+export const NETWORK_METADATA = {
+  Ethereum: { id: 'Ethereum', name: 'Ethereum', symbol: 'ETH', color: '#4338ca', sliceColor: '#6366f1', icon: 'Ξ', desc: 'Layer 1 Mainnet & Beacon Validator' },
+  Arbitrum: { id: 'Arbitrum', name: 'Arbitrum', symbol: 'ARB', color: '#0284c7', sliceColor: '#38bdf8', icon: '💙', desc: 'Arbitrum One Layer 2' },
+  Optimism: { id: 'Optimism', name: 'Optimism', symbol: 'OP', color: '#dc2626', sliceColor: '#f87171', icon: '🔴', desc: 'OP Mainnet Layer 2 & Yearn Vaults' },
+  Base: { id: 'Base', name: 'Base', symbol: 'BASE', color: '#2563eb', sliceColor: '#60a5fa', icon: '🔵', desc: 'Coinbase Base Layer 2' },
+  Polygon: { id: 'Polygon', name: 'Polygon', symbol: 'POL', color: '#7e22ce', sliceColor: '#a855f7', icon: '💜', desc: 'Polygon PoS & ERC-20s' },
+  Avalanche: { id: 'Avalanche', name: 'Avalanche', symbol: 'AVAX', color: '#e11d48', sliceColor: '#fb7185', icon: '🔺', desc: 'Avalanche C-Chain' },
+  Scroll: { id: 'Scroll', name: 'Scroll', symbol: 'ETH', color: '#c2410c', sliceColor: '#fb923c', icon: '📜', desc: 'Scroll zkEVM' },
+  Blast: { id: 'Blast', name: 'Blast', symbol: 'ETH', color: '#ca8a04', sliceColor: '#facc15', icon: '💥', desc: 'Blast Native Yield L2' },
+  Linea: { id: 'Linea', name: 'Linea', symbol: 'ETH', color: '#334155', sliceColor: '#64748b', icon: '⬛', desc: 'Consensys Linea zkEVM' },
+  Bitcoin: { id: 'Bitcoin', name: 'Bitcoin', symbol: 'BTC', color: '#b45309', sliceColor: '#f59e0b', icon: '₿', desc: 'Native BTC & Babylon LST' },
+  Solana: { id: 'Solana', name: 'Solana', symbol: 'SOL', color: '#047857', sliceColor: '#10b981', icon: '◎', desc: 'Solana & JitoSOL MEV' },
+  Hyperliquid: { id: 'Hyperliquid', name: 'Hyperliquid', symbol: 'HYPE', color: '#0f766e', sliceColor: '#14b8a6', icon: '⚡', desc: 'HyperEVM, Staking & HLP Vault' },
+  Coinbase: { id: 'Coinbase', name: 'Coinbase', symbol: 'COIN', color: '#1d4ed8', sliceColor: '#3b82f6', icon: '🔵', desc: 'Coinbase Cloud & Exchange' }
+};
+
+export function getNetworkInfo(netNameOrChain) {
+  if (!netNameOrChain) return NETWORK_METADATA.Ethereum;
+  const raw = String(netNameOrChain).trim();
+  if (NETWORK_METADATA[raw]) return NETWORK_METADATA[raw];
+  const upper = raw.toUpperCase();
+  if (upper === 'BTC' || upper === 'BITCOIN') return NETWORK_METADATA.Bitcoin;
+  if (upper === 'ETH' || upper === 'ETHEREUM') return NETWORK_METADATA.Ethereum;
+  if (upper === 'SOL' || upper === 'SOLANA') return NETWORK_METADATA.Solana;
+  if (upper === 'HL' || upper === 'HYPERLIQUID') return NETWORK_METADATA.Hyperliquid;
+  if (upper === 'COINBASE') return NETWORK_METADATA.Coinbase;
+  if (upper.includes('ARB')) return NETWORK_METADATA.Arbitrum;
+  if (upper.includes('OP') || upper.includes('OPTIMISM')) return NETWORK_METADATA.Optimism;
+  if (upper.includes('BASE')) return NETWORK_METADATA.Base;
+  if (upper.includes('POLYGON') || upper === 'POL' || upper === 'MATIC') return NETWORK_METADATA.Polygon;
+  if (upper.includes('AVAX') || upper.includes('AVALANCHE')) return NETWORK_METADATA.Avalanche;
+  if (upper.includes('SCROLL')) return NETWORK_METADATA.Scroll;
+  if (upper.includes('BLAST')) return NETWORK_METADATA.Blast;
+  if (upper.includes('LINEA')) return NETWORK_METADATA.Linea;
+
+  return {
+    id: raw,
+    name: raw,
+    symbol: raw.substring(0, 4).toUpperCase(),
+    color: '#64748b',
+    sliceColor: '#94a3b8',
+    icon: '•',
+    desc: `${raw} Network`
+  };
+}
+
 export const INITIAL_MARKET_PRICES = {
   BTC: { price: 85250.00, change24h: 1.85, name: 'Bitcoin', symbol: 'BTC', chain: 'BTC' },
   ETH: { price: 2699.00, change24h: 2.15, name: 'Ethereum', symbol: 'ETH', chain: 'ETH' },

@@ -269,6 +269,7 @@ function TrackerMain() {
               </div>
               <div className="grid-col-allocation">
                 <ChainBreakdown
+                  networkTotals={metrics.networkTotals}
                   chainTotals={metrics.chainTotals}
                   totalNetWorth={metrics.totalNetWorth}
                   onSelectChainFilter={setSelectedChainFilter}

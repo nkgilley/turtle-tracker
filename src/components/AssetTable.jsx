@@ -8,9 +8,31 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
 
   // Filter assets
   const filteredAssets = assets.filter(item => {
-    // Chain filter
-    if (activeChainFilter !== 'ALL' && item.chain !== activeChainFilter) {
-      return false;
+    // Chain or Network filter
+    if (activeChainFilter !== 'ALL') {
+      const filterLower = activeChainFilter.toLowerCase();
+      const itemChainLower = (item.chain || '').toLowerCase();
+      const itemNetLower = (item.network || '').toLowerCase();
+
+      let matches = false;
+      if (filterLower === 'eth' || filterLower === 'ethereum') {
+        matches = itemChainLower === 'eth' || itemNetLower.includes('eth');
+      } else if (filterLower === 'btc' || filterLower === 'bitcoin') {
+        matches = itemChainLower === 'btc' || itemNetLower.includes('btc');
+      } else if (filterLower === 'sol' || filterLower === 'solana') {
+        matches = itemChainLower === 'sol' || itemNetLower.includes('sol');
+      } else if (filterLower === 'hl' || filterLower === 'hyperliquid') {
+        matches = itemChainLower === 'hl' || itemNetLower.includes('hyperliquid');
+      } else if (filterLower === 'coinbase') {
+        matches = itemChainLower === 'coinbase' || itemNetLower.includes('coinbase');
+      } else {
+        // Specific network or L2 like Arbitrum, Polygon, Base, Optimism, Avalanche, Scroll, Blast, Linea
+        matches = itemNetLower === filterLower || itemNetLower.includes(filterLower);
+      }
+
+      if (!matches) {
+        return false;
+      }
     }
     // Staked filter
     if (showStakedOnly && !item.isStaked) {
@@ -53,6 +75,8 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
       default: return { bg: '#f1f5f9', text: '#334155', border: '#cbd5e1' };
     }
   };
+
+  const isCustomNetworkFilter = !['ALL', 'BTC', 'ETH', 'SOL', 'HL', 'COINBASE'].includes(activeChainFilter);
 
   return (
     <div className="asset-table-card">
@@ -110,6 +134,16 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
           >
             🔵 Coinbase
           </button>
+
+          {isCustomNetworkFilter && (
+            <button
+              className="pill-btn active"
+              onClick={() => onSelectChainFilter('ALL')}
+              title="Click to clear filter"
+            >
+              🌐 {activeChainFilter} ✕
+            </button>
+          )}
 
           <button
             className={`pill-btn-toggle ${showStakedOnly ? 'active' : ''}`}
