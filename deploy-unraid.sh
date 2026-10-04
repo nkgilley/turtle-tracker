@@ -19,6 +19,7 @@ UNRAID_HOST="${UNRAID_HOST:-root@tower.local}"
 UNRAID_IP=$(echo "${UNRAID_HOST}" | cut -d'@' -f2)
 APP_NAME="${APP_NAME:-turtletrack}"
 PORT="${PORT:-8550}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-nkgilley/turtletrack:latest}"
 REMOTE_APPDATA="/mnt/user/appdata/${APP_NAME}"
 REMOTE_TEMPLATE="/boot/config/plugins/dockerMan/templates-user/my-${APP_NAME}.xml"
 
@@ -73,10 +74,17 @@ if [ -f "${SCRIPT_DIR}/unraid-template.xml" ]; then
   echo -e "${GREEN}✓ Unraid template installed to ${REMOTE_TEMPLATE}.${NC}"
 fi
 
-# 4. Build Docker Image on Unraid
-echo -e "${BLUE}[4/5] Building Docker image on Unraid (${APP_NAME}:latest)...${NC}"
-ssh "${UNRAID_HOST}" "cd ${REMOTE_APPDATA} && docker build -t ${APP_NAME}:latest ."
-echo -e "${GREEN}✓ Docker image built successfully.${NC}"
+# 4. Pull or Build Docker Image on Unraid
+if [ "${LOCAL_BUILD:-false}" = "true" ]; then
+  echo -e "${BLUE}[4/5] Building Docker image locally on Unraid (${APP_NAME}:latest)...${NC}"
+  ssh "${UNRAID_HOST}" "cd ${REMOTE_APPDATA} && docker build -t ${APP_NAME}:latest ."
+  TARGET_IMAGE="${APP_NAME}:latest"
+else
+  echo -e "${BLUE}[4/5] Pulling Docker image from Docker Hub (${DOCKER_IMAGE})...${NC}"
+  ssh "${UNRAID_HOST}" "docker pull ${DOCKER_IMAGE}"
+  TARGET_IMAGE="${DOCKER_IMAGE}"
+fi
+echo -e "${GREEN}✓ Docker image ready.${NC}"
 
 # 5. Stop existing container and start new one
 echo -e "${BLUE}[5/5] Launching container on port ${PORT}...${NC}"
@@ -87,7 +95,7 @@ ssh "${UNRAID_HOST}" "
     --name ${APP_NAME} \
     --restart unless-stopped \
     -p ${PORT}:80 \
-    ${APP_NAME}:latest
+    \${TARGET_IMAGE:-\"${TARGET_IMAGE}\"}
 "
 
 # Verification
