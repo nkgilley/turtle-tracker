@@ -5,6 +5,18 @@ import { SUPPORTED_CHAINS } from '../data/mockData';
 export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showStakedOnly, setShowStakedOnly] = useState(false);
+  const [hideSmallBalances, setHideSmallBalances] = useState(() => {
+    try {
+      return localStorage.getItem('turtletrack_hide_small_balances') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Count small balance assets (< $1.00)
+  const smallBalancesCount = React.useMemo(() => {
+    return assets.filter(item => Math.abs(item.totalValue) < 1.00).length;
+  }, [assets]);
 
   // Filter assets
   const filteredAssets = assets.filter(item => {
@@ -36,6 +48,10 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
     }
     // Staked filter
     if (showStakedOnly && !item.isStaked) {
+      return false;
+    }
+    // Hide small balances filter (< $1.00)
+    if (hideSmallBalances && Math.abs(item.totalValue) < 1.00) {
       return false;
     }
     // Search query
@@ -152,6 +168,25 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
             <ShieldCheck size={14} />
             <span>Staked Only</span>
           </button>
+
+          <label 
+            className={`checkbox-control ${hideSmallBalances ? 'active' : ''}`}
+            title="Hide low-value holdings and dust (< $1.00)"
+          >
+            <input
+              type="checkbox"
+              id="hide-small-balances-checkbox"
+              checked={hideSmallBalances}
+              onChange={(e) => {
+                const val = e.target.checked;
+                setHideSmallBalances(val);
+                try {
+                  localStorage.setItem('turtletrack_hide_small_balances', String(val));
+                } catch {}
+              }}
+            />
+            <span>Hide Small Balances (&lt; $1){smallBalancesCount > 0 ? ` (${smallBalancesCount})` : ''}</span>
+          </label>
         </div>
       </div>
 

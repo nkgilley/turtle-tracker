@@ -68,8 +68,22 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
           <div className="user-menu-container">
             {isAuthenticated ? (
               <div className="user-profile-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
-                <div className="user-avatar">
-                  {user.name.charAt(0).toUpperCase()}
+                <div 
+                  className="user-avatar"
+                  style={user.provider === 'wallet' ? {
+                    background: user.walletChain === 'ETH' ? '#3730a3' : '#065f46',
+                    color: '#ffffff'
+                  } : user.provider === 'google' ? {
+                    background: '#ffffff',
+                    color: '#ea4335',
+                    border: '2px solid #cbd5e1'
+                  } : undefined}
+                >
+                  {user.provider === 'wallet' 
+                    ? (user.walletChain === 'ETH' ? 'Ξ' : '◎') 
+                    : user.provider === 'google' 
+                      ? 'G' 
+                      : user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="user-meta hide-mobile">
                   <span className="user-name">{user.name}</span>
@@ -86,14 +100,27 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
                 <div className="dropdown-header">
                   <p className="dropdown-name">{user.name}</p>
                   <p className="dropdown-email">{user.email}</p>
+                  {user.provider === 'google' && (
+                    <span className="provider-tag google">Google Account</span>
+                  )}
+                  {user.provider === 'wallet' && (
+                    <span className="provider-tag wallet">{user.walletChain} Web3 Account</span>
+                  )}
                 </div>
                 <div className="dropdown-divider"></div>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => { setShowUserMenu(false); onOpenAuthModal(); }}
+                >
+                  <User size={15} />
+                  <span>Switch Account / Sign In</span>
+                </button>
                 {user.isDemo ? (
                   <button 
                     className="dropdown-item" 
                     onClick={() => { setShowUserMenu(false); onOpenAuthModal(); }}
                   >
-                    <User size={15} />
+                    <Sparkles size={15} />
                     <span>Create Full Account</span>
                   </button>
                 ) : (

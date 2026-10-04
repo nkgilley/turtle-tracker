@@ -51,6 +51,38 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
+  const loginWithGoogle = (email, name) => {
+    const userEmail = email || 'user@turtletrack.com';
+    const userName = name || userEmail.split('@')[0];
+    const googleUser = {
+      id: `usr-google-${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      name: userName,
+      email: userEmail,
+      provider: 'google',
+      isDemo: false
+    };
+    setUser(googleUser);
+    return { success: true, user: googleUser };
+  };
+
+  const loginWithWallet = (chain, address, customLabel) => {
+    const isEth = chain.toUpperCase() === 'ETH';
+    const shortAddr = address.length > 10 
+      ? `${address.slice(0, 6)}...${address.slice(-4)}` 
+      : address;
+    const walletUser = {
+      id: `usr-w3-${chain.toLowerCase()}-${address.toLowerCase()}`,
+      name: customLabel || shortAddr,
+      email: `${shortAddr.replace(/\.\.\./g, '_')}@${chain.toLowerCase()}.wallet`,
+      provider: 'wallet',
+      walletChain: isEth ? 'ETH' : 'SOL',
+      walletAddress: address,
+      isDemo: false
+    };
+    setUser(walletUser);
+    return { success: true, user: walletUser };
+  };
+
   const logout = () => {
     setUser(null);
   };
@@ -66,7 +98,16 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, signup, logout, switchToDemo }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      login, 
+      signup, 
+      logout, 
+      switchToDemo,
+      loginWithGoogle,
+      loginWithWallet
+    }}>
       {children}
     </AuthContext.Provider>
   );

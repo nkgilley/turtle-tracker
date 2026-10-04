@@ -2946,3 +2946,281 @@ body {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   AUTHENTICATION: GOOGLE & WEB3 CRYPTO WALLET SIGN-IN
+   ========================================================================== */
+.auth-body {
+  padding: 24px;
+}
+
+.provider-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  border: 1px solid var(--border-dark);
+}
+
+.provider-tag.google {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #f87171;
+}
+
+.provider-tag.wallet {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.auth-flow-main, .auth-flow-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.btn-google-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 18px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 2px solid var(--border-dark);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--border-dark);
+  transition: all 0.12s ease;
+}
+
+.btn-google-auth:hover {
+  background: #f8fafc;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border-dark);
+}
+
+.btn-google-auth:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--border-dark);
+}
+
+.auth-sub-link-row {
+  display: flex;
+  justify-content: center;
+  margin-top: -6px;
+}
+
+.sub-text-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sub-text-btn:hover {
+  color: var(--color-turtle-green);
+}
+
+.auth-section-label {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin: 4px 0;
+}
+
+.auth-section-label::before,
+.auth-section-label::after {
+  content: '';
+  flex: 1;
+  border-bottom: 2px dashed #d1c7b7;
+}
+
+.auth-section-label span {
+  padding: 0 10px;
+}
+
+.wallet-auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-wallet-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 2px solid var(--border-dark);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 3px 3px 0 var(--border-dark);
+  transition: all 0.12s ease;
+}
+
+.btn-wallet-auth:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border-dark);
+}
+
+.btn-wallet-auth:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--border-dark);
+}
+
+.btn-wallet-auth.eth {
+  background: #eef2ff;
+  border-color: #3730a3;
+  color: #312e81;
+}
+
+.btn-wallet-auth.eth:hover:not(:disabled) {
+  background: #e0e7ff;
+}
+
+.btn-wallet-auth.sol {
+  background: #ecfdf5;
+  border-color: #065f46;
+  color: #064e3b;
+}
+
+.btn-wallet-auth.sol:hover:not(:disabled) {
+  background: #d1fae5;
+}
+
+.wallet-btn-icon {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.wallet-btn-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.wallet-btn-title {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.wallet-btn-hint {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  opacity: 0.8;
+}
+
+.auth-alt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.auth-back-btn {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+}
+
+.quick-fill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -6px;
+  margin-bottom: 6px;
+}
+
+.quick-fill-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.quick-pill {
+  background: #fdfaf3;
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #14532d;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.quick-pill:hover {
+  background: #f0fdf4;
+  border-color: #14532d;
+}
+
+.input-custom-symbol {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #14532d;
+  margin-right: 4px;
+}
+
+/* ==========================================================================
+   HIDE SMALL BALANCES CHECKBOX CONTROL
+   ========================================================================== */
+.checkbox-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #fdfaf3;
+  border: 2px solid var(--border-dark);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 2px 2px 0 var(--border-dark);
+  transition: all 0.12s ease;
+}
+
+.checkbox-control:hover {
+  background: #f5eedb;
+  transform: translateY(-1px);
+  box-shadow: 2px 3px 0 var(--border-dark);
+}
+
+.checkbox-control.active {
+  background: #f0fdf4;
+  border-color: #15803d;
+  color: #14532d;
+  box-shadow: 2px 2px 0 #15803d;
+}
+
+.checkbox-control input[type="checkbox"] {
+  accent-color: #15803d;
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+

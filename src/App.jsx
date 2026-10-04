@@ -70,19 +70,59 @@ function TrackerMain() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
 
-  // Sync wallets when user account switches (e.g. signup, demo switch)
+  // Sync wallets when user account switches (e.g. signup, demo switch, wallet login)
   useEffect(() => {
     const key = getWalletStorageKey(user);
     const legacyKey = getLegacyStorageKey(user);
     try {
       const saved = localStorage.getItem(key) || localStorage.getItem(legacyKey);
       if (saved) {
-        setWallets(sanitizeWalletList(JSON.parse(saved)));
-        return;
+        const parsed = sanitizeWalletList(JSON.parse(saved));
+        if (parsed.length > 0) {
+          // If logged in via crypto wallet, ensure that wallet is in the list
+          if (user?.provider === 'wallet' && user?.walletAddress) {
+            const exists = parsed.some(w => w.address.toLowerCase() === user.walletAddress.toLowerCase());
+            if (!exists) {
+              const isEth = user.walletChain === 'ETH';
+              const newWallet = {
+                id: `w-${user.walletChain.toLowerCase()}-${Date.now()}`,
+                label: `${isEth ? 'Ethereum' : 'Solana'} Web3 Account`,
+                chain: user.walletChain,
+                address: user.walletAddress,
+                color: isEth ? '#627EEA' : '#14F195',
+                createdAt: new Date().toISOString().split('T')[0],
+                isPrimary: true,
+                assets: []
+              };
+              setWallets([newWallet, ...parsed]);
+              return;
+            }
+          }
+          setWallets(parsed);
+          return;
+        }
       }
     } catch {}
-    setWallets(user?.isDemo ? INITIAL_DEMO_WALLETS : []);
-  }, [user?.id, user?.isDemo]);
+
+    if (user?.isDemo) {
+      setWallets(INITIAL_DEMO_WALLETS);
+    } else if (user?.provider === 'wallet' && user?.walletAddress) {
+      const isEth = user.walletChain === 'ETH';
+      const autoWallet = {
+        id: `w-${user.walletChain.toLowerCase()}-${Date.now()}`,
+        label: `${isEth ? 'Ethereum' : 'Solana'} Web3 Account`,
+        chain: user.walletChain,
+        address: user.walletAddress,
+        color: isEth ? '#627EEA' : '#14F195',
+        createdAt: new Date().toISOString().split('T')[0],
+        isPrimary: true,
+        assets: []
+      };
+      setWallets([autoWallet]);
+    } else {
+      setWallets([]);
+    }
+  }, [user?.id, user?.isDemo, user?.provider, user?.walletAddress, user?.walletChain]);
 
   // Persist wallets
   useEffect(() => {
