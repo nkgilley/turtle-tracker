@@ -12,7 +12,7 @@ import { AuthModal } from './components/AuthModal';
 import { TurtleLogo } from './components/TurtleLogo';
 import { INITIAL_MARKET_PRICES, INITIAL_DEMO_WALLETS, INITIAL_TRANSACTIONS } from './data/mockData';
 import { calculatePortfolioMetrics, fetchLiveMarketPrices, fetchLiveWalletAssets } from './services/cryptoService';
-import { Shield, Sparkles, Layers, Zap, Plus, ArrowUpRight, Wallet } from 'lucide-react';
+import { Shield, Sparkles, Layers, Zap, Plus, ArrowUpRight, Wallet, Lock, User } from 'lucide-react';
 import './index.css';
 
 function TrackerMain() {
@@ -339,109 +339,192 @@ function TrackerMain() {
 
   return (
     <div className="app-container">
+      {/* Demo Notice Banner */}
+      {user?.isDemo && (
+        <div className="demo-notice-bar">
+          <span>🧪 <strong>PREVIEW DEMO PORTFOLIO</strong> — Viewing sample assets for Alex Sterling.</span>
+          <button className="demo-notice-btn" onClick={() => setIsAuthModalOpen(true)}>
+            Sign In / Create Account
+          </button>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <Navbar
         walletsCount={wallets.length}
-        onOpenWalletModal={() => openWalletModal('ETH')}
+        onOpenWalletModal={() => {
+          if (!user) {
+            setIsAuthModalOpen(true);
+          } else {
+            openWalletModal('ETH');
+          }
+        }}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
 
-      <main className="main-content">
-        {/* Portfolio Valuation & Metric Cards */}
-        <PortfolioSummary
-          metrics={metrics}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-
-        {/* Empty State Onboarding Banner when Balance is $0 */}
-        {wallets.length === 0 && (
-          <div className="empty-portfolio-hero fade-in">
-            <div className="empty-hero-content">
-              <div className="empty-hero-badge">
-                <Sparkles size={15} />
-                <span>FRESH ACCOUNT &middot; ZERO DEMO ASSETS</span>
+      {!user ? (
+        /* Unauthenticated Gateway Screen */
+        <main className="main-content auth-gateway-wrap">
+          <div className="auth-gateway-box fade-in">
+            <div className="auth-gateway-header">
+              <div className="auth-gateway-icon">
+                <TurtleLogo size={40} />
               </div>
-              <h2 className="empty-hero-title">Start Tracking Your Multi-Chain Portfolio</h2>
-              <p className="empty-hero-desc">
-                Your portfolio balance is currently <strong>$0.00</strong>. Connect your self-custody Web3 wallets or link your Coinbase account to begin tracking liquid assets, validator staking, and yields in real time.
+              <h1 className="auth-gateway-title">Welcome to TurtleTrack</h1>
+              <p className="auth-gateway-desc">
+                Non-custodial multi-chain portfolio tracking and staking telemetry.
+                Sign in to sync your saved wallets across any device.
               </p>
-              <div className="empty-hero-actions">
-                <button 
-                  className="btn-primary"
-                  onClick={() => openWalletModal('ETH')}
-                >
-                  <Plus size={16} />
-                  <span>Add Web3 Wallet (BTC, ETH, SOL, HL)</span>
-                </button>
-                <button 
-                  className="btn-secondary coinbase-action-btn"
-                  onClick={() => openWalletModal('COINBASE')}
-                >
-                  <span className="coinbase-dot">🔵</span>
-                  <span>Connect Coinbase Account</span>
-                </button>
-                <button 
-                  className="btn-accent"
-                  onClick={() => switchToDemo()}
-                >
+            </div>
+
+            <div className="auth-gateway-body">
+              <button 
+                className="btn-primary auth-gateway-btn" 
+                onClick={() => setIsAuthModalOpen(true)}
+              >
+                <User size={18} />
+                <span>Sign In / Create Account</span>
+              </button>
+
+              <button 
+                className="btn-secondary auth-gateway-btn" 
+                onClick={() => setIsAuthModalOpen(true)}
+              >
+                <Wallet size={18} />
+                <span>Connect Web3 Wallet (ETH / SOL)</span>
+              </button>
+
+              <div className="auth-gateway-divider">
+                <span>or explore with sample data</span>
+              </div>
+
+              <button 
+                className="btn-accent auth-gateway-btn" 
+                onClick={() => switchToDemo()}
+              >
+                <Sparkles size={16} />
+                <span>Preview Demo Portfolio</span>
+              </button>
+
+              <div className="auth-gateway-features">
+                <div className="gateway-feat">
+                  <Shield size={14} />
+                  <span>100% Non-Custodial</span>
+                </div>
+                <div className="gateway-feat">
+                  <Layers size={14} />
+                  <span>Multi-Chain L1 &amp; L2</span>
+                </div>
+                <div className="gateway-feat">
+                  <Zap size={14} />
+                  <span>Staking Telemetry</span>
+                </div>
+                <div className="gateway-feat">
+                  <Lock size={14} />
+                  <span>Server-Side SQLite</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      ) : (
+        <main className="main-content">
+          {/* Portfolio Valuation & Metric Cards */}
+          <PortfolioSummary
+            metrics={metrics}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+
+          {/* Empty State Onboarding Banner when Balance is $0 */}
+          {wallets.length === 0 && (
+            <div className="empty-portfolio-hero fade-in">
+              <div className="empty-hero-content">
+                <div className="empty-hero-badge">
                   <Sparkles size={15} />
-                  <span>Preview Demo Portfolio</span>
-                </button>
+                  <span>FRESH ACCOUNT &middot; ZERO DEMO ASSETS</span>
+                </div>
+                <h2 className="empty-hero-title">Start Tracking Your Multi-Chain Portfolio</h2>
+                <p className="empty-hero-desc">
+                  Your portfolio balance is currently <strong>$0.00</strong>. Connect your self-custody Web3 wallets or link your Coinbase account to begin tracking liquid assets, validator staking, and yields in real time.
+                </p>
+                <div className="empty-hero-actions">
+                  <button 
+                    className="btn-primary"
+                    onClick={() => openWalletModal('ETH')}
+                  >
+                    <Plus size={16} />
+                    <span>Add Web3 Wallet (BTC, ETH, SOL, HL)</span>
+                  </button>
+                  <button 
+                    className="btn-secondary coinbase-action-btn"
+                    onClick={() => openWalletModal('COINBASE')}
+                  >
+                    <span className="coinbase-dot">🔵</span>
+                    <span>Connect Coinbase Account</span>
+                  </button>
+                  <button 
+                    className="btn-accent"
+                    onClick={() => switchToDemo()}
+                  >
+                    <Sparkles size={15} />
+                    <span>Preview Demo Portfolio</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Tab 1: Overview */}
-        {activeTab === 'overview' && (
-          <div className="tab-pane fade-in">
-            {/* Chart & Network Allocation Row */}
-            <div className="dashboard-grid-row">
-              <div className="grid-col-chart">
-                <PortfolioChart totalNetWorth={metrics.totalNetWorth} />
+          {/* Tab 1: Overview */}
+          {activeTab === 'overview' && (
+            <div className="tab-pane fade-in">
+              {/* Chart & Network Allocation Row */}
+              <div className="dashboard-grid-row">
+                <div className="grid-col-chart">
+                  <PortfolioChart totalNetWorth={metrics.totalNetWorth} />
+                </div>
+                <div className="grid-col-allocation">
+                  <ChainBreakdown
+                    networkTotals={metrics.networkTotals}
+                    chainTotals={metrics.chainTotals}
+                    totalNetWorth={metrics.totalNetWorth}
+                    onSelectChainFilter={setSelectedChainFilter}
+                    selectedChainFilter={selectedChainFilter}
+                  />
+                </div>
               </div>
-              <div className="grid-col-allocation">
-                <ChainBreakdown
-                  networkTotals={metrics.networkTotals}
-                  chainTotals={metrics.chainTotals}
-                  totalNetWorth={metrics.totalNetWorth}
-                  onSelectChainFilter={setSelectedChainFilter}
-                  selectedChainFilter={selectedChainFilter}
-                />
-              </div>
+
+              {/* Asset Table */}
+              <AssetTable
+                assets={metrics.flattenedAssets}
+                activeChainFilter={selectedChainFilter}
+                onSelectChainFilter={setSelectedChainFilter}
+              />
             </div>
+          )}
 
-            {/* Asset Table */}
-            <AssetTable
-              assets={metrics.flattenedAssets}
-              activeChainFilter={selectedChainFilter}
-              onSelectChainFilter={setSelectedChainFilter}
-            />
-          </div>
-        )}
+          {/* Tab 2: Staking Hub */}
+          {activeTab === 'staking' && (
+            <div className="tab-pane fade-in">
+              <StakingHub
+                stakingPositions={metrics.stakingPositions}
+                totalStakedValue={metrics.totalStakedValue}
+                totalAnnualYield={metrics.totalAnnualYield}
+                averageStakingApy={metrics.averageStakingApy}
+              />
+            </div>
+          )}
 
-        {/* Tab 2: Staking Hub */}
-        {activeTab === 'staking' && (
-          <div className="tab-pane fade-in">
-            <StakingHub
-              stakingPositions={metrics.stakingPositions}
-              totalStakedValue={metrics.totalStakedValue}
-              totalAnnualYield={metrics.totalAnnualYield}
-              averageStakingApy={metrics.averageStakingApy}
-            />
-          </div>
-        )}
-
-        {/* Tab 3: Activity Feed */}
-        {activeTab === 'activity' && (
-          <div className="tab-pane fade-in">
-            <ActivityLog transactions={transactions} />
-          </div>
-        )}
-      </main>
+          {/* Tab 3: Activity Feed */}
+          {activeTab === 'activity' && (
+            <div className="tab-pane fade-in">
+              <ActivityLog transactions={transactions} />
+            </div>
+          )}
+        </main>
+      )}
 
       {/* Footer */}
       <footer className="footer">

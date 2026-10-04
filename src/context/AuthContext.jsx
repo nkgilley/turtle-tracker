@@ -17,17 +17,27 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem(LEGACY_USER_KEY);
-      if (saved) return JSON.parse(saved);
+      const savedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
+      // ONLY restore user if there is an active authenticated token
+      if (savedToken) {
+        const saved = localStorage.getItem(STORAGE_USER_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && !parsed.isDemo && parsed.id) {
+            return parsed;
+          }
+        }
+      }
     } catch {
       // ignore
     }
-    return {
-      id: 'usr-main-account',
-      name: 'Portfolio Owner',
-      email: 'owner@portfolio.vault',
-      isDemo: false
-    };
+    // Clean up stale mock/demo keys
+    try {
+      localStorage.removeItem(LEGACY_USER_KEY);
+      localStorage.removeItem('turtletrack_wallets_fresh_guest');
+      localStorage.removeItem('aura_wallets_fresh_guest');
+    } catch {}
+    return null;
   });
 
   const [serverWallets, setServerWallets] = useState(null);
