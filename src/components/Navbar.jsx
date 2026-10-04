@@ -66,17 +66,11 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
                   style={user.provider === 'wallet' ? {
                     background: user.walletChain === 'ETH' ? '#3730a3' : '#065f46',
                     color: '#ffffff'
-                  } : user.provider === 'google' ? {
-                    background: '#ffffff',
-                    color: '#ea4335',
-                    border: '2px solid #cbd5e1'
                   } : undefined}
                 >
                   {user.provider === 'wallet' 
                     ? (user.walletChain === 'ETH' ? 'Ξ' : '◎') 
-                    : user.provider === 'google' 
-                      ? 'G' 
-                      : user.name.charAt(0).toUpperCase()}
+                    : (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
                 </div>
                 <div className="user-meta hide-mobile">
                   <span className="user-name">{user.name}</span>
@@ -93,9 +87,6 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
                 <div className="dropdown-header">
                   <p className="dropdown-name">{user.name}</p>
                   <p className="dropdown-email">{user.email}</p>
-                  {user.provider === 'google' && (
-                    <span className="provider-tag google">Google Account</span>
-                  )}
                   {user.provider === 'wallet' && (
                     <span className="provider-tag wallet">{user.walletChain} Web3 Account</span>
                   )}

@@ -51,22 +51,7 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
-  const loginWithGoogle = (email, name) => {
-    if (!email || !email.includes('@')) {
-      return { success: false, error: 'A valid email address is required.' };
-    }
-    const cleanEmail = email.trim();
-    const userName = name || cleanEmail.split('@')[0];
-    const googleUser = {
-      id: `usr-google-${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
-      name: userName,
-      email: cleanEmail,
-      provider: 'google',
-      isDemo: false
-    };
-    setUser(googleUser);
-    return { success: true, user: googleUser };
-  };
+
 
   const loginWithWallet = (chain, address, customLabel) => {
     const isEth = chain.toUpperCase() === 'ETH';
@@ -108,7 +93,6 @@ export function AuthProvider({ children }) {
       signup, 
       logout, 
       switchToDemo,
-      loginWithGoogle,
       loginWithWallet
     }}>
       {children}
