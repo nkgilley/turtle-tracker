@@ -268,8 +268,8 @@ export { app };
 
 const isDirectRun = process.argv[1] && process.argv[1].endsWith('server.js');
 if (isDirectRun) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TurtleTrack server listening on http://0.0.0.0:${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`TurtleTrack server listening on port ${PORT}`);
   });
 }
 
