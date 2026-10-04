@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Flame, Zap, DollarSign, Calculator, Lock, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Flame, Zap, DollarSign, Calculator, Lock, ArrowUpRight } from 'lucide-react';
 
 export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYield, averageStakingApy }) {
   const [calculatorStake, setCalculatorStake] = useState(totalStakedValue || 50000);
@@ -9,44 +9,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
   const calculatedFutureValue = calculatorStake * Math.pow(1 + (averageStakingApy / 100), calcYears);
   const totalEarnedYield = calculatedFutureValue - calculatorStake;
 
-  const protocolHighlights = [
-    {
-      chain: 'Bitcoin (BTC)',
-      protocol: 'Babylon & Lombard',
-      tag: 'PoS Shared Security',
-      color: '#b45309',
-      symbol: 'LBTC',
-      apy: '4.8%',
-      features: ['Self-custodial BTC timestamping', 'No bridging required', 'Lombard DeFi yield multiplier']
-    },
-    {
-      chain: 'Ethereum (ETH)',
-      protocol: 'Lido & EigenLayer',
-      tag: 'LST & Restaking',
-      color: '#4338ca',
-      symbol: 'stETH / wstETH',
-      apy: '3.8% - 5.4%',
-      features: ['Consensus & Execution layer rewards', 'AVS Actively Validated Services yield', 'Instant liquidity on DEXes']
-    },
-    {
-      chain: 'Solana (SOL)',
-      protocol: 'Jito MEV Stake',
-      tag: 'MEV Yield Boosted',
-      color: '#047857',
-      symbol: 'JitoSOL',
-      apy: '7.9%',
-      features: ['MEV tip distribution to stakers', 'Decentralized validator allocation', 'Zero lockup liquidity token']
-    },
-    {
-      chain: 'Hyperliquid (HL)',
-      protocol: 'HYPE Staking & HLP',
-      tag: 'PoS Emissions & L1 Fees',
-      color: '#0f766e',
-      symbol: 'HYPE / stHYPE / HLP',
-      apy: '2.2% - 20.4%',
-      features: ['Consensus delegation yields ~2.18% net APR', 'stHYPE liquid staking yields ~2.14% APY', 'HLP market-making vault yields ~18% - 22%']
-    }
-  ];
+
 
   return (
     <div className="staking-hub-container">
@@ -83,31 +46,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
         </div>
       </div>
 
-      {/* Protocol Cards */}
-      <div className="protocol-cards-grid">
-        {protocolHighlights.map((proto, idx) => (
-          <div key={idx} className="protocol-card" style={{ '--border-color': proto.color }}>
-            <div className="proto-card-top">
-              <div className="proto-badge" style={{ backgroundColor: `${proto.color}15`, color: proto.color }}>
-                {proto.chain}
-              </div>
-              <span className="proto-apy">{proto.apy} APY</span>
-            </div>
 
-            <h3 className="proto-name">{proto.protocol}</h3>
-            <span className="proto-tag">{proto.tag}</span>
-
-            <ul className="proto-features-list">
-              {proto.features.map((feat, fIdx) => (
-                <li key={fIdx}>
-                  <CheckCircle2 size={13} style={{ color: proto.color }} />
-                  <span>{feat}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
 
       {/* Staking Positions Table */}
       <div className="staking-table-card">
