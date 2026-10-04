@@ -202,7 +202,7 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
                     {/* Holdings (Tokens) */}
                     <td className="align-right">
                       <div className="holdings-cell">
-                        <span className="holdings-amt">
+                        <span className={`holdings-amt ${item.balance < 0 ? 'red-text font-bold' : ''}`}>
                           {item.balance.toLocaleString('en-US', { maximumFractionDigits: 4 })}
                         </span>
                         <span className="holdings-symbol">{item.symbol}</span>
@@ -211,8 +211,10 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
 
                     {/* Total Value ($) */}
                     <td className="align-right">
-                      <span className="fiat-value">
-                        ${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <span className={`fiat-value ${item.value < 0 ? 'red-text font-bold' : ''}`}>
+                        {item.value < 0
+                          ? `-$${Math.abs(item.value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : `$${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </span>
                     </td>
 

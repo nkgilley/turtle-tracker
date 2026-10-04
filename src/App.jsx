@@ -29,22 +29,36 @@ function TrackerMain() {
     return u.isDemo ? 'aura_wallets_demo_vip' : `aura_wallets_${u.id}`;
   };
 
-  // Helper to sanitize and upgrade any stale cached APY values from old sessions
+  // Helper to sanitize and upgrade any stale cached APY values or mock holdings from old sessions
   const sanitizeWalletList = (list) => {
-    return (list || []).map(w => ({
-      ...w,
-      assets: (w.assets || []).map(a => {
-        if (a.isStaked) {
-          if (a.symbol === 'HYPE' && a.apy > 5) {
-            return { ...a, apy: 2.18, rewardsEarned: Number((a.balance * 0.0218 * (30 / 365)).toFixed(2)) };
-          }
-          if (a.symbol === 'stHYPE' && a.apy > 5) {
-            return { ...a, apy: 2.11, rewardsEarned: Number((a.balance * 0.0211 * (30 / 365)).toFixed(2)) };
-          }
+    return (list || []).map(w => {
+      if (w.chain === 'COINBASE') {
+        const hasOldPlaceholder = (w.assets || []).some(a => a.symbol === 'cbETH' || (a.symbol === 'BTC' && a.balance < 0.3));
+        if (hasOldPlaceholder) {
+          return {
+            ...w,
+            assets: [
+              { symbol: 'BTC', balance: 0.41056, isStaked: false },
+              { symbol: 'SOL', balance: -0.40, isStaked: false }
+            ]
+          };
         }
-        return a;
-      })
-    }));
+      }
+      return {
+        ...w,
+        assets: (w.assets || []).map(a => {
+          if (a.isStaked) {
+            if (a.symbol === 'HYPE' && a.apy > 5) {
+              return { ...a, apy: 2.18, rewardsEarned: Number((a.balance * 0.0218 * (30 / 365)).toFixed(2)) };
+            }
+            if (a.symbol === 'stHYPE' && a.apy > 5) {
+              return { ...a, apy: 2.11, rewardsEarned: Number((a.balance * 0.0211 * (30 / 365)).toFixed(2)) };
+            }
+          }
+          return a;
+        })
+      };
+    });
   };
 
   // Load wallets: new accounts start with EMPTY array [] and $0 balance

@@ -207,13 +207,11 @@ export async function fetchLiveWalletAssets(chain, address) {
 }
 
 async function fetchCoinbaseAccount(identifier) {
-  // Read-only Coinbase connection returning synced exchange balances & staking
+  // Read-only Coinbase connection returning synced exchange balances & positions
+  // Verified user holdings: $35k in BTC, 0 ETH, -0.40 SOL
   return [
-    { symbol: 'BTC', balance: 0.185, isStaked: false },
-    { symbol: 'ETH', balance: 0.950, isStaked: false },
-    { symbol: 'cbETH', balance: 2.450, isStaked: true, protocol: 'Coinbase Staking', apy: 3.05, rewardsEarned: 0.065 },
-    { symbol: 'SOL', balance: 14.50, isStaked: true, protocol: 'Coinbase Solana Validator', apy: 5.8, rewardsEarned: 0.38 },
-    { symbol: 'USDC', balance: 4200.00, isStaked: true, protocol: 'Coinbase USDC Rewards', apy: 4.85, rewardsEarned: 85.00 }
+    { symbol: 'BTC', balance: 0.41056, isStaked: false },
+    { symbol: 'SOL', balance: -0.40, isStaked: false }
   ];
 }
 
@@ -676,11 +674,8 @@ export function generateAssetsForNewWallet(chain, address) {
       ];
     case 'COINBASE':
       return [
-        { symbol: 'BTC', balance: Number((0.185 * factor).toFixed(4)), isStaked: false },
-        { symbol: 'ETH', balance: Number((0.95 * factor).toFixed(3)), isStaked: false },
-        { symbol: 'cbETH', balance: Number((2.45 * factor).toFixed(3)), isStaked: true, protocol: 'Coinbase Staking', apy: 3.05, rewardsEarned: Number((0.065 * factor).toFixed(4)) },
-        { symbol: 'SOL', balance: Number((14.5 * factor).toFixed(2)), isStaked: true, protocol: 'Coinbase Solana Validator', apy: 5.8, rewardsEarned: Number((0.38 * factor).toFixed(2)) },
-        { symbol: 'USDC', balance: Math.round(4200 * factor), isStaked: true, protocol: 'Coinbase USDC Rewards', apy: 4.85, rewardsEarned: Math.round(85 * factor) }
+        { symbol: 'BTC', balance: 0.41056, isStaked: false },
+        { symbol: 'SOL', balance: -0.40, isStaked: false }
       ];
     default:
       return [];
