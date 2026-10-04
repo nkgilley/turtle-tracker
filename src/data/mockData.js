@@ -38,7 +38,13 @@ export const INITIAL_MARKET_PRICES = {
   AAVE: { price: 175.50, change24h: 1.90, name: 'Aave', symbol: 'AAVE', chain: 'ETH' },
   XLM: { price: 0.28, change24h: 0.40, name: 'Stellar Lumens', symbol: 'XLM', chain: 'COINBASE' },
   TIA: { price: 4.85, change24h: -1.20, name: 'Celestia', symbol: 'TIA', chain: 'COINBASE' },
-  CLV: { price: 0.042, change24h: 0.00, name: 'Clover Finance', symbol: 'CLV', chain: 'COINBASE' }
+  CLV: { price: 0.042, change24h: 0.00, name: 'Clover Finance', symbol: 'CLV', chain: 'COINBASE' },
+  ARB: { price: 0.54, change24h: 1.15, name: 'Arbitrum', symbol: 'ARB', chain: 'ETH' },
+  OP: { price: 1.62, change24h: 2.30, name: 'Optimism', symbol: 'OP', chain: 'ETH' },
+  yvOP: { price: 1.74, change24h: 2.35, name: 'Yearn Vault OP', symbol: 'yvOP', chain: 'ETH' },
+  AVAX: { price: 28.45, change24h: 3.10, name: 'Avalanche', symbol: 'AVAX', chain: 'ETH' },
+  MATIC: { price: 0.38, change24h: -0.50, name: 'Polygon MATIC', symbol: 'MATIC', chain: 'ETH' },
+  GMX: { price: 28.90, change24h: 1.40, name: 'GMX', symbol: 'GMX', chain: 'ETH' }
 };
 
 export const INITIAL_DEMO_WALLETS = [

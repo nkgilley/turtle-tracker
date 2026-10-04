@@ -21,9 +21,10 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
       const q = searchTerm.toLowerCase();
       const matchSymbol = item.symbol.toLowerCase().includes(q);
       const matchName = item.name.toLowerCase().includes(q);
+      const matchNetwork = (item.network || '').toLowerCase().includes(q);
       const matchWallet = item.walletLabel.toLowerCase().includes(q);
       const matchAddr = item.walletAddress.toLowerCase().includes(q);
-      return matchSymbol || matchName || matchWallet || matchAddr;
+      return matchSymbol || matchName || matchNetwork || matchWallet || matchAddr;
     }
     return true;
   });
@@ -33,7 +34,16 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
     return chainInfo ? `${chainInfo.explorer}${address}` : '#';
   };
 
-  const getChainBadgeColor = (chain) => {
+  const getChainBadgeColor = (chain, network) => {
+    const net = (network || chain || '').toUpperCase();
+    if (net.includes('ARB')) return { bg: '#e0f2fe', text: '#0369a1', border: '#38bdf8' };
+    if (net.includes('OP')) return { bg: '#fee2e2', text: '#b91c1c', border: '#f87171' };
+    if (net.includes('BASE')) return { bg: '#eff6ff', text: '#1d4ed8', border: '#60a5fa' };
+    if (net.includes('POLYGON') || net === 'POL') return { bg: '#f3e8ff', text: '#7e22ce', border: '#c084fc' };
+    if (net.includes('AVAX') || net.includes('AVALANCHE')) return { bg: '#ffe4e6', text: '#e11d48', border: '#fb7185' };
+    if (net.includes('BLAST')) return { bg: '#fef08a', text: '#854d0e', border: '#eab308' };
+    if (net.includes('SCROLL')) return { bg: '#ffedd5', text: '#c2410c', border: '#fb923c' };
+    if (net.includes('LINEA')) return { bg: '#f1f5f9', text: '#0f172a', border: '#64748b' };
     switch (chain) {
       case 'BTC': return { bg: '#fef3c7', text: '#92400e', border: '#d97706' };
       case 'ETH': return { bg: '#e0e7ff', text: '#3730a3', border: '#6366f1' };
@@ -80,7 +90,7 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
             className={`pill-btn ${activeChainFilter === 'ETH' ? 'active' : ''}`}
             onClick={() => onSelectChainFilter('ETH')}
           >
-            Ξ Ethereum & ERC-20
+            Ξ Ethereum &amp; L2s
           </button>
           <button
             className={`pill-btn ${activeChainFilter === 'SOL' ? 'active' : ''}`}
@@ -137,7 +147,7 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
               </tr>
             ) : (
               filteredAssets.map(item => {
-                const chainStyle = getChainBadgeColor(item.chain);
+                const chainStyle = getChainBadgeColor(item.chain, item.network);
                 const isPos = item.change24h >= 0;
 
                 return (
@@ -155,7 +165,7 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
                               className="chain-tag" 
                               style={{ backgroundColor: chainStyle.bg, color: chainStyle.text, borderColor: chainStyle.border }}
                             >
-                              {item.chain}
+                              {item.network || item.chain}
                             </span>
                           </div>
                           <span className="token-full-name">{item.name}</span>

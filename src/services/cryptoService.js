@@ -635,104 +635,149 @@ async function fetchSolanaOnChain(address) {
   return assets;
 }
 
+function isSpamToken(symbol, name) {
+  const s = (symbol || '').toLowerCase();
+  const n = (name || '').toLowerCase();
+  const spamKeywords = [
+    'http', '.io', '.site', '.top', '.com', '.lol', '.cc', '.xyz', '.net', '.to', '.app',
+    'claim', 'voucher', 'reward', 'ticket', 'ads', 'visit', 'www.', 'airdrop', 'casino',
+    'raffle', 'bonus', 'free', 'metawin', 'drop', 'entry'
+  ];
+  if (spamKeywords.some(k => s.includes(k) || n.includes(k))) return true;
+  if ((symbol || '').length > 10) return true;
+  if ((symbol || '').startsWith('$')) return true;
+  return false;
+}
+
+// Multi-Chain EVM & L2 Scanner (Ethereum, Arbitrum, Optimism, Base, Polygon, Avalanche, etc.)
 async function fetchEthereumOnChain(address) {
   const assets = [];
+  const cleanAddr = address.trim();
 
-  // 1. Fetch Liquid ETH and Beacon Chain status
-  let liquidEth = 0;
+  // Define major L2 and EVM networks to scan in parallel
+  const networks = [
+    { name: 'Ethereum', native: 'ETH', blockscout: 'https://eth.blockscout.com', rpc: 'https://ethereum.publicnode.com' },
+    { name: 'Arbitrum', native: 'ETH', blockscout: 'https://arbitrum.blockscout.com', rpc: 'https://arb1.arbitrum.io/rpc' },
+    { name: 'Optimism', native: 'ETH', blockscout: 'https://optimism.blockscout.com', rpc: 'https://mainnet.optimism.io' },
+    { name: 'Base', native: 'ETH', blockscout: 'https://base.blockscout.com', rpc: 'https://mainnet.base.org' },
+    { name: 'Polygon', native: 'POL', blockscout: 'https://polygon.blockscout.com', rpc: 'https://polygon-rpc.com' },
+    { name: 'Avalanche', native: 'AVAX', blockscout: null, rpc: 'https://api.avax.network/ext/bc/C/rpc' },
+    { name: 'Scroll', native: 'ETH', blockscout: null, rpc: 'https://rpc.scroll.io' },
+    { name: 'Blast', native: 'ETH', blockscout: null, rpc: 'https://rpc.blast.io' },
+    { name: 'Linea', native: 'ETH', blockscout: null, rpc: 'https://rpc.linea.build' }
+  ];
+
   let hasBeaconWithdrawals = false;
 
-  try {
-    const ethRes = await fetch(`https://eth.blockscout.com/api/v2/addresses/${address}`);
-    if (ethRes.ok) {
-      const data = await ethRes.json();
-      liquidEth = Number((parseFloat(data.coin_balance || '0') / 1e18).toFixed(4));
-      hasBeaconWithdrawals = !!data.has_beacon_chain_withdrawals;
-    }
-  } catch (e) {
-    console.warn('Blockscout address fetch error, trying RPC fallback:', e);
-    try {
-      const rpcRes = await fetch('https://ethereum.publicnode.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_getBalance',
-          params: [address, 'latest']
-        })
-      });
-      const rpcData = await rpcRes.json();
-      if (rpcData.result) {
-        liquidEth = Number((parseInt(rpcData.result, 16) / 1e18).toFixed(4));
-      }
-    } catch (rpcErr) {
-      console.warn('RPC fallback error:', rpcErr);
-    }
-  }
+  const results = await Promise.allSettled(networks.map(async (net) => {
+    const netAssets = [];
+    let nativeBal = 0;
 
-  assets.push({
-    symbol: 'ETH',
-    balance: liquidEth,
-    isStaked: false
+    // 1. Fetch Native Coin Balance (Blockscout API with RPC fallback)
+    try {
+      if (net.blockscout) {
+        const res = await fetch(`${net.blockscout}/api/v2/addresses/${cleanAddr}`);
+        if (res.ok) {
+          const data = await res.json();
+          nativeBal = parseFloat(data.coin_balance || '0') / 1e18;
+          if (net.name === 'Ethereum') {
+            hasBeaconWithdrawals = !!data.has_beacon_chain_withdrawals;
+          }
+        }
+      }
+    } catch (e) {
+      // Fall through to RPC fallback
+    }
+
+    if (nativeBal <= 0 && net.rpc) {
+      try {
+        const rpcRes = await fetch(net.rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_getBalance',
+            params: [cleanAddr, 'latest']
+          })
+        });
+        const rpcData = await rpcRes.json();
+        if (rpcData.result) {
+          nativeBal = parseInt(rpcData.result, 16) / 1e18;
+        }
+      } catch (rpcErr) {
+        // Continue
+      }
+    }
+
+    if (nativeBal > 0.0001) {
+      netAssets.push({
+        symbol: net.native,
+        balance: Number(nativeBal.toFixed(4)),
+        network: net.name,
+        isStaked: false
+      });
+    }
+
+    // 2. Fetch ERC-20 Tokens on this network
+    if (net.blockscout) {
+      try {
+        const tokenRes = await fetch(`${net.blockscout}/api/v2/addresses/${cleanAddr}/tokens`);
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          (tokenData.items || []).forEach(it => {
+            const token = it.token || {};
+            const sym = (token.symbol || '').trim();
+            const name = (token.name || '').trim();
+
+            if (isSpamToken(sym, name)) return;
+
+            const decimals = parseInt(token.decimals || '18', 10);
+            const rawVal = parseFloat(it.value || '0');
+            const tokenBal = Number((rawVal / Math.pow(10, decimals)).toFixed(4));
+
+            // Filter out dust or crazy unlisted billions
+            if (tokenBal <= 0.0001 || tokenBal > 10000000) return;
+
+            const isStaked = sym === 'stETH' || sym === 'wstETH' || sym === 'yvOP';
+            netAssets.push({
+              symbol: sym,
+              balance: tokenBal,
+              network: net.name,
+              isStaked,
+              protocol: isStaked 
+                ? (sym === 'yvOP' ? 'Yearn Vault' : sym === 'wstETH' ? 'EigenLayer / Lido wstETH' : 'Lido DAO') 
+                : undefined,
+              apy: isStaked ? (sym === 'yvOP' ? 4.8 : 3.8) : undefined,
+              rewardsEarned: isStaked ? Number((tokenBal * 0.038).toFixed(4)) : undefined
+            });
+          });
+        }
+      } catch (tokenErr) {
+        // Continue
+      }
+    }
+
+    return netAssets;
+  }));
+
+  results.forEach(r => {
+    if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+      assets.push(...r.value);
+    }
   });
 
-  // 2. Native Staked ETH Validator check
-  // If the address has beacon withdrawals or registered validator, it has active validator stake (32 ETH)
-  if (hasBeaconWithdrawals || address.toLowerCase() === '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045') {
+  // 3. Native Staked ETH Validator check
+  if (hasBeaconWithdrawals || cleanAddr.toLowerCase() === '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045') {
     assets.push({
       symbol: 'ETH',
       balance: 32.0,
+      network: 'Ethereum',
       isStaked: true,
       protocol: 'Native Beacon Validator',
       apy: 3.4,
       rewardsEarned: 1.15
     });
-  }
-
-  // 3. Fetch ERC-20 Tokens (stETH, wstETH, USDC, USDT)
-  try {
-    const tokenRes = await fetch(`https://eth.blockscout.com/api/v2/addresses/${address}/tokens`);
-    if (tokenRes.ok) {
-      const tokenData = await tokenRes.json();
-      (tokenData.items || []).forEach(it => {
-        const token = it.token || {};
-        const sym = token.symbol;
-        const decimals = parseInt(token.decimals || '18', 10);
-        const rawVal = parseFloat(it.value || '0');
-        const tokenBal = Number((rawVal / Math.pow(10, decimals)).toFixed(4));
-
-        if (tokenBal > 0) {
-          if (sym === 'stETH') {
-            assets.push({
-              symbol: 'stETH',
-              balance: tokenBal,
-              isStaked: true,
-              protocol: 'Lido DAO',
-              apy: 3.8,
-              rewardsEarned: Number((tokenBal * 0.038).toFixed(4))
-            });
-          } else if (sym === 'wstETH') {
-            assets.push({
-              symbol: 'wstETH',
-              balance: tokenBal,
-              isStaked: true,
-              protocol: 'EigenLayer / Lido wstETH',
-              apy: 5.4,
-              rewardsEarned: Number((tokenBal * 0.054).toFixed(4))
-            });
-          } else if (['USDC', 'USDT', 'LINK', 'UNI', 'PEPE'].includes(sym)) {
-            assets.push({
-              symbol: sym,
-              balance: tokenBal,
-              isStaked: false
-            });
-          }
-        }
-      });
-    }
-  } catch (e) {
-    console.warn('Blockscout tokens fetch error:', e);
   }
 
   return assets;
@@ -854,11 +899,12 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
       if (asset.symbol === 'stHYPE' && rowApy > 5) rowApy = 2.11;
 
       flattenedAssets.push({
-        id: `${wallet.id}-${asset.symbol}-${asset.isStaked ? 'staked' : 'liquid'}`,
+        id: `${wallet.id}-${asset.symbol}-${asset.network || wallet.chain}-${asset.isStaked ? 'staked' : 'liquid'}-${Math.random().toString(36).substring(2, 6)}`,
         walletId: wallet.id,
         walletLabel: wallet.label,
         walletAddress: wallet.address,
         chain: wallet.chain,
+        network: asset.network || (wallet.chain === 'ETH' ? 'Ethereum' : wallet.chain),
         symbol: asset.symbol,
         name: priceData.name,
         balance: asset.balance,
