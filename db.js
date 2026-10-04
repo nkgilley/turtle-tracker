@@ -107,27 +107,31 @@ export function authenticateUser(email, password) {
 
 export function findOrCreateWalletUser(chain, address, customLabel) {
   const cleanAddr = address.trim();
+  const normalizedAddr = cleanAddr.toLowerCase();
+  const targetChain = chain.toUpperCase();
+  const id = `usr-w3-${targetChain.toLowerCase()}-${normalizedAddr}`;
   const shortAddr = cleanAddr.length > 10 
     ? `${cleanAddr.slice(0, 6)}...${cleanAddr.slice(-4)}` 
     : cleanAddr;
-  const virtualEmail = `${shortAddr.replace(/\.\.\./g, '_')}@${chain.toLowerCase()}.wallet`.toLowerCase();
+  const canonicalEmail = `${normalizedAddr}@${targetChain.toLowerCase()}.wallet`;
+  const legacyVirtualEmail = `${shortAddr.replace(/\.\.\./g, '_')}@${targetChain.toLowerCase()}.wallet`.toLowerCase();
 
-  let user = db.prepare('SELECT * FROM users WHERE email = ?').get(virtualEmail);
+  // Find user by deterministic ID or email
+  let user = db.prepare('SELECT * FROM users WHERE id = ? OR email = ? OR email = ?').get(id, canonicalEmail, legacyVirtualEmail);
   if (!user) {
-    const id = `usr-w3-${chain.toLowerCase()}-${cleanAddr.toLowerCase()}`;
     db.prepare(`
       INSERT INTO users (id, email, name, provider)
       VALUES (?, ?, ?, 'wallet')
-    `).run(id, virtualEmail, customLabel || shortAddr);
-    user = { id, email: virtualEmail, name: customLabel || shortAddr, provider: 'wallet' };
+    `).run(id, canonicalEmail, customLabel || shortAddr);
+    user = { id, email: canonicalEmail, name: customLabel || shortAddr, provider: 'wallet' };
 
     // Seed initial default chain wallet for this address
     const dateStr = new Date().toISOString().split('T')[0];
-    const isEth = chain.toUpperCase() === 'ETH';
+    const isEth = targetChain === 'ETH';
     if (isEth) {
       saveUserWallets(id, [
         {
-          id: `w-eth-${cleanAddr.toLowerCase()}`,
+          id: `w-eth-${normalizedAddr}`,
           label: 'Ethereum & L2 Ecosystem',
           chain: 'ETH',
           address: cleanAddr,
@@ -137,7 +141,7 @@ export function findOrCreateWalletUser(chain, address, customLabel) {
           assets: []
         },
         {
-          id: `w-hl-${cleanAddr.toLowerCase()}`,
+          id: `w-hl-${normalizedAddr}`,
           label: 'Hyperliquid L1 & EVM',
           chain: 'HL',
           address: cleanAddr,
@@ -150,7 +154,7 @@ export function findOrCreateWalletUser(chain, address, customLabel) {
     } else {
       saveUserWallets(id, [
         {
-          id: `w-sol-${cleanAddr.toLowerCase()}`,
+          id: `w-sol-${normalizedAddr}`,
           label: 'Solana Web3 Account',
           chain: 'SOL',
           address: cleanAddr,
@@ -168,7 +172,7 @@ export function findOrCreateWalletUser(chain, address, customLabel) {
     email: user.email,
     name: user.name,
     provider: 'wallet',
-    walletChain: chain.toUpperCase(),
+    walletChain: targetChain,
     walletAddress: cleanAddr
   };
 }
@@ -198,6 +202,17 @@ export function validateSession(token) {
 
   const user = db.prepare('SELECT id, email, name, provider FROM users WHERE id = ?').get(session.user_id);
   if (!user) return null;
+
+  if (user.provider === 'wallet' && user.id.startsWith('usr-w3-')) {
+    const parts = user.id.split('-');
+    const walletChain = parts[2]?.toUpperCase();
+    const walletAddress = parts.slice(3).join('-');
+    return {
+      ...user,
+      walletChain,
+      walletAddress
+    };
+  }
 
   return user;
 }

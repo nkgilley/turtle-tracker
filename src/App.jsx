@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { PortfolioSummary } from './components/PortfolioSummary';
@@ -140,59 +140,86 @@ function TrackerMain() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
 
-  // Sync wallets when serverWallets are received from SQLite backend across devices
+  // Track hydration state to prevent overwriting server database with unhydrated or default data
+  const hydratedUserIdRef = useRef(null);
+  const lastSyncedSignatureRef = useRef('');
+
+  // Helper to generate signature of wallets to detect meaningful mutations
+  const getWalletsSignature = (list) => {
+    if (!Array.isArray(list)) return '';
+    return list.map(w => `${w.id || ''}:${w.chain || ''}:${w.address || ''}:${w.label || ''}:${w.assets?.length || 0}:${w.privateKey ? 'pk' : ''}`).join('|');
+  };
+
+  // Sync wallets from server SQLite backend or demo/cached state
   useEffect(() => {
+    if (!user) {
+      setWallets([]);
+      hydratedUserIdRef.current = null;
+      lastSyncedSignatureRef.current = '';
+      return;
+    }
+
+    if (user.isDemo) {
+      setWallets(INITIAL_DEMO_WALLETS);
+      hydratedUserIdRef.current = 'demo';
+      lastSyncedSignatureRef.current = '';
+      return;
+    }
+
+    // Authenticated user with server wallets received from SQLite
     if (serverWallets && Array.isArray(serverWallets)) {
       const sanitized = sanitizeWalletList(serverWallets);
       setWallets(sanitized);
-    }
-  }, [serverWallets]);
+      hydratedUserIdRef.current = user.id;
+      lastSyncedSignatureRef.current = getWalletsSignature(sanitized);
 
-  // Sync wallets when user account switches (e.g. signup, demo switch, wallet login)
-  useEffect(() => {
+      const key = getWalletStorageKey(user);
+      try {
+        localStorage.setItem(key, JSON.stringify(sanitized));
+      } catch {}
+      return;
+    }
+
+    // If serverWallets hasn't arrived yet, check if there's a cached copy for this exact user
     const key = getWalletStorageKey(user);
-    const legacyKey = getLegacyStorageKey(user);
     try {
-      const saved = localStorage.getItem(key) || localStorage.getItem(legacyKey);
+      const saved = localStorage.getItem(key);
       if (saved) {
         const parsed = sanitizeWalletList(JSON.parse(saved));
         if (parsed.length > 0) {
-          // If logged in via crypto wallet, ensure that both ETH/L2s and Hyperliquid are added
-          if (user?.provider === 'wallet' && user?.walletAddress) {
-            const defaults = createWalletsForLogin(user.provider, user.walletChain, user.walletAddress);
-            const missing = defaults.filter(def => 
-              !parsed.some(w => w.chain === def.chain && w.address.toLowerCase() === def.address.toLowerCase())
-            );
-            if (missing.length > 0) {
-              setWallets([...missing, ...parsed]);
-              return;
-            }
-          }
           setWallets(parsed);
+          lastSyncedSignatureRef.current = getWalletsSignature(parsed);
           return;
         }
       }
     } catch {}
 
-    if (user?.isDemo) {
-      setWallets(INITIAL_DEMO_WALLETS);
-    } else if (user?.provider === 'wallet' && user?.walletAddress) {
-      setWallets(createWalletsForLogin(user.provider, user.walletChain, user.walletAddress));
-    } else {
-      setWallets([]);
-    }
-  }, [user?.id, user?.isDemo, user?.provider, user?.walletAddress, user?.walletChain]);
+    // Fallback if brand new user without serverWallets yet
+    setWallets([]);
+  }, [user?.id, user?.isDemo, serverWallets]);
 
   // Persist wallets to localStorage and sync to SQLite database on the server
   useEffect(() => {
+    if (!user || user.isDemo) return;
+
+    // CRITICAL GUARD: Only sync to server if wallets have been hydrated for THIS user!
+    // Never push unhydrated or empty defaults to the database.
+    if (hydratedUserIdRef.current !== user.id) {
+      return;
+    }
+
+    const currentSig = getWalletsSignature(wallets);
+    if (lastSyncedSignatureRef.current === currentSig) {
+      return; // Already in sync with server!
+    }
+
     const key = getWalletStorageKey(user);
     try {
       localStorage.setItem(key, JSON.stringify(wallets));
     } catch {}
 
-    if (user && !user.isDemo) {
-      syncWalletsToServer(wallets);
-    }
+    lastSyncedSignatureRef.current = currentSig;
+    syncWalletsToServer(wallets);
   }, [wallets, user?.id, user?.isDemo, syncWalletsToServer]);
 
   // Auto-sync live on-chain balances for any newly added wallets without assets

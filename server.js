@@ -155,9 +155,18 @@ app.get('/api/wallets', authMiddleware, (req, res) => {
 // Update / Sync user's saved wallets
 app.put('/api/wallets', authMiddleware, (req, res) => {
   try {
-    const { wallets } = req.body || {};
+    const { wallets, confirmClear } = req.body || {};
     if (!Array.isArray(wallets)) {
       return res.status(400).json({ error: 'Wallets must be an array' });
+    }
+
+    // Safety guard: if wallets array is empty, ensure it's not an accidental unhydrated sync
+    if (wallets.length === 0) {
+      const existing = getUserWallets(req.user.id);
+      if (existing.length > 0 && !confirmClear) {
+        console.warn(`[API] Guard: Prevented accidental clear of ${existing.length} wallets for user ${req.user.id}`);
+        return res.json({ success: true, wallets: existing, warning: 'Ignored empty sync to prevent accidental data loss' });
+      }
     }
 
     const updated = saveUserWallets(req.user.id, wallets);
