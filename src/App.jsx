@@ -323,7 +323,7 @@ function TrackerMain() {
               <span className="pulse-dot green"></span>
               <span>All Reef Indexers Nominal</span>
             </div>
-            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack.com. Built for Million-User Scale.</span>
+            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack.com</span>
           </div>
         </div>
       </footer>

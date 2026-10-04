@@ -93,7 +93,7 @@ export function WalletManagerModal({
       w => w.chain === targetChain && w.address.toLowerCase() === targetAddress.toLowerCase()
     );
     if (exists) {
-      setError(`This connection is already added to your ${targetChain} vault.`);
+      setError(`This connection is already added to your ${targetChain} wallet.`);
       return;
     }
 
@@ -108,7 +108,7 @@ export function WalletManagerModal({
       const chainObj = SUPPORTED_CHAINS.find(c => c.id === targetChain);
       const newWallet = {
         id: `w-${targetChain.toLowerCase()}-${Date.now()}`,
-        label: label.trim() || (connectionType === 'coinbase' ? 'Coinbase Account' : `${chainObj?.name || targetChain} Vault`),
+        label: label.trim() || (connectionType === 'coinbase' ? 'Coinbase Account' : `${chainObj?.name || targetChain} Wallet`),
         chain: targetChain,
         address: targetAddress,
         privateKey: connectionType === 'coinbase' ? coinbasePrivateKey.trim() : undefined,
@@ -148,7 +148,7 @@ export function WalletManagerModal({
         <div className="modal-header retro-window-header">
           <div className="modal-title-wrap">
             <span className="retro-window-icon">🐢</span>
-            <h2 className="modal-title">TurtleTrack Shell Vault Manager</h2>
+            <h2 className="modal-title">TurtleTrack Wallet Manager</h2>
           </div>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={16} />
@@ -171,7 +171,7 @@ export function WalletManagerModal({
             onClick={() => { setActiveTab('wallets'); setError(''); }}
           >
             <Wallet size={15} />
-            <span>Tracked Vaults ({wallets.length})</span>
+            <span>Tracked Wallets ({wallets.length})</span>
           </button>
         </div>
 
@@ -309,7 +309,7 @@ export function WalletManagerModal({
 
                 {/* Optional Custom Label */}
                 <div className="form-group">
-                  <label className="form-label">Vault Label (Optional)</label>
+                  <label className="form-label">Wallet Label (Optional)</label>
                   <input
                     type="text"
                     value={label}
@@ -350,7 +350,7 @@ export function WalletManagerModal({
                   ) : (
                     <>
                       <Plus size={16} />
-                      <span>Connect &amp; Sync Vault</span>
+                      <span>Connect &amp; Sync Wallet</span>
                     </>
                   )}
                 </button>

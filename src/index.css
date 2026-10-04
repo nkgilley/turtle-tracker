@@ -934,13 +934,44 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .breakdown-title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.breakdown-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fef08a;
+  border: 1.5px solid var(--border-dark);
+  box-shadow: 1.5px 1.5px 0 var(--border-dark);
+  color: #854d0e;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-filter-reset:hover {
+  background: #fde047;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 var(--border-dark);
 }
 
 .card-heading, .card-title {
@@ -962,95 +993,230 @@ body {
   border-radius: 3px;
 }
 
-.allocation-ratio-tag {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 700;
-  background: var(--bg-surface-elevated);
-  border: 1.5px solid var(--border-dark);
-  padding: 3px 8px;
-  border-radius: 3px;
-}
-
-.segmented-bar {
-  width: 100%;
-  height: 14px;
-  border-radius: 3px;
-  border: 1.5px solid var(--border-dark);
-  background: #e2e8f0;
-  display: flex;
-  overflow: hidden;
-  margin-bottom: 18px;
-  box-shadow: inset 1px 1px 0px rgba(0,0,0,0.15);
-}
-
-.segment {
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-.chain-cards-grid {
+/* Allocation Layout: Pie Chart Left + Ecosystem Cards Right */
+.allocation-layout {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .allocation-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+.pie-chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #fdfaf3;
+  border: 2px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-retro-inset);
+}
+
+.pie-svg-container {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  margin: 0 auto;
+}
+
+.pie-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.pie-slice {
+  transform-origin: 120px 120px;
+}
+
+.pie-center-telemetry {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.center-hover-info, .center-default-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+  width: 92px;
+}
+
+.center-icon, .center-logo {
+  font-size: 1.3rem;
+  margin-bottom: 2px;
+}
+
+.center-chain-name {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  max-width: 85px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.center-pct {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 1px 0;
+}
+
+.center-val {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.center-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.center-total {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 2px 0;
+}
+
+.center-hint {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--color-turtle-green);
+  font-weight: 700;
+}
+
+.pie-chart-legend-hint {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Ecosystem Cards Grid */
+.chain-cards-column {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+  width: 100%;
 }
 
 .chain-card {
-  background: #fbf9f4;
+  background: #ffffff;
   border: 2px solid var(--border-dark);
   box-shadow: 2px 2px 0px var(--border-dark);
   border-radius: var(--radius-sm);
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
   transition: var(--transition-smooth);
 }
 
-.chain-card:hover {
+.chain-card:hover, .chain-card.hover-state {
   transform: translate(-1px, -1px);
-  box-shadow: var(--shadow-retro);
-  background: #ffffff;
+  box-shadow: 3px 3px 0px var(--border-dark);
+  background: #fdfaf3;
+  border-color: var(--chain-color, var(--border-dark));
+}
+
+.chain-card.active-filter {
+  background: #fefce8;
+  border-color: #14532d;
+  box-shadow: 3px 3px 0px #14532d;
+  outline: 2px solid #86efac;
 }
 
 .chain-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 6px;
 }
 
 .chain-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 3px;
-  border: 1.5px solid var(--border-dark);
-}
-
-.chain-pct {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.chain-val {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 3px;
-}
-
-.chain-count {
   font-size: 0.74rem;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1.5px solid;
+}
+
+.chain-card-pct-badge {
   font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.chain-card-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.chain-card-value {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.filtered-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #dcfce7;
+  color: #15803d;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid #86efac;
+}
+
+.chain-card-sub {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  line-height: 1.35;
 }
 
 /* ==========================================================================
