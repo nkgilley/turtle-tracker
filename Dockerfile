@@ -13,24 +13,30 @@ COPY . .
 # Build the production bundle
 RUN npm run build
 
-# Stage 2: Serve with lightweight Nginx Alpine (~25MB total image)
-FROM nginx:alpine
+# Stage 2: Production Node.js server with Coinbase CDP & Solana RPC proxying
+FROM node:20-alpine AS runner
 
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
 
-# Copy built static assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+ENV NODE_ENV=production
+ENV PORT=80
 
-# Copy custom nginx configuration for SPA routing & caching
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy package files and install production dependencies
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copy built frontend assets from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy server code
+COPY server.js ./
 
 # Expose port 80
 EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:80/health || exit 1
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start production server
+CMD ["node", "server.js"]
