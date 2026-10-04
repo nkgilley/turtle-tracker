@@ -1,5 +1,6 @@
 import { INITIAL_MARKET_PRICES } from '../data/mockData.js';
 import { PublicKey } from '@solana/web3.js';
+import { SignJWT, importPKCS8 } from 'jose';
 
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
@@ -178,8 +179,124 @@ export async function fetchLiveMarketPrices(fallbackPrices = INITIAL_MARKET_PRIC
   }
 }
 
+// Helper to convert SEC1 PEM to PKCS#8 in pure JS for browser-side jose signing
+function convertPemToPkcs8(pem) {
+  let clean = (pem || '').trim();
+  if (!clean.includes('\n') && clean.includes('\\n')) {
+    clean = clean.replace(/\\n/g, '\n');
+  }
+  if (clean.includes('BEGIN PRIVATE KEY')) {
+    return clean;
+  }
+  // Convert SEC1 to PKCS#8
+  const b64 = clean.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  const algId = [0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07];
+  const octetHeader = bytes.length < 128 ? [0x04, bytes.length] : [0x04, 0x81, bytes.length];
+  const inner = [0x02, 0x01, 0x00, ...algId, ...octetHeader, ...bytes];
+  const seqHeader = inner.length < 128 ? [0x30, inner.length] : [0x30, 0x81, inner.length];
+  const pkcs8Bytes = new Uint8Array([...seqHeader, ...inner]);
+
+  let pkcs8B64 = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < pkcs8Bytes.length; i += chunkSize) {
+    pkcs8B64 += String.fromCharCode.apply(null, pkcs8Bytes.subarray(i, i + chunkSize));
+  }
+  const formatted = btoa(pkcs8B64).match(/.{1,64}/g).join('\n');
+  return `-----BEGIN PRIVATE KEY-----\n${formatted}\n-----END PRIVATE KEY-----`;
+}
+
+function parseCoinbaseAccounts(accounts) {
+  return (accounts || [])
+    .map(acc => {
+      const avail = parseFloat(acc.available_balance?.value || '0');
+      const hold = parseFloat(acc.hold?.value || '0');
+      const balance = avail + hold;
+      const symbol = (acc.currency || '').toUpperCase();
+      const isStaked = symbol === 'CBETH' || symbol === 'CBBTC';
+      return {
+        symbol,
+        balance,
+        isStaked,
+        protocol: isStaked ? 'Coinbase Staking' : undefined,
+        apy: symbol === 'CBETH' ? 3.05 : undefined
+      };
+    })
+    .filter(a => Math.abs(a.balance) > 0.000001);
+}
+
+// Live Coinbase Account Fetcher via CDP API (Zero Hardcoding)
+export async function fetchCoinbaseAccount(identifier, privateKey = null) {
+  if (!identifier) {
+    throw new Error('Coinbase Key Name is required.');
+  }
+
+  // 1. Attempt live request via Vite dev proxy middleware
+  try {
+    const res = await fetch('/api/coinbase/accounts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyName: identifier, privateKey: privateKey })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return parseCoinbaseAccounts(data.accounts || []);
+    } else if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 500) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Coinbase API error (${res.status})`);
+    }
+  } catch (err) {
+    if (err.message && (err.message.includes('Coinbase API') || err.message.includes('Key Name'))) {
+      throw err;
+    }
+    console.warn('Vite proxy not available, attempting direct browser call:', err);
+  }
+
+  // 2. Direct browser fallback using jose
+  if (!privateKey) {
+    throw new Error('Coinbase Private Key is required to sign requests to the Coinbase API.');
+  }
+
+  const pkcs8Key = convertPemToPkcs8(privateKey);
+  const keyObj = await importPKCS8(pkcs8Key, 'ES256');
+  const now = Math.floor(Date.now() / 1000);
+  const jwt = await new SignJWT({
+    iss: 'cdp',
+    nbf: now,
+    exp: now + 120,
+    sub: identifier.trim(),
+    uri: 'GET api.coinbase.com/api/v3/brokerage/accounts'
+  })
+    .setProtectedHeader({
+      alg: 'ES256',
+      typ: 'JWT',
+      kid: identifier.trim(),
+      nonce: Math.random().toString(36).substring(2) + Date.now().toString(36)
+    })
+    .sign(keyObj);
+
+  const directRes = await fetch('https://api.coinbase.com/api/v3/brokerage/accounts?limit=250', {
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Accept': 'application/json'
+    }
+  });
+
+  if (!directRes.ok) {
+    const errText = await directRes.text();
+    throw new Error(`Coinbase API error (${directRes.status}): ${errText}`);
+  }
+
+  const data = await directRes.json();
+  return parseCoinbaseAccounts(data.accounts || []);
+}
+
 // Live On-Chain Asset Fetcher
-export async function fetchLiveWalletAssets(chain, address) {
+export async function fetchLiveWalletAssets(chain, address, privateKey = null) {
   const cleanAddr = address.trim();
 
   try {
@@ -196,23 +313,14 @@ export async function fetchLiveWalletAssets(chain, address) {
       return await fetchBitcoinOnChain(cleanAddr);
     }
     if (chain === 'COINBASE') {
-      return await fetchCoinbaseAccount(cleanAddr);
+      return await fetchCoinbaseAccount(cleanAddr, privateKey);
     }
   } catch (err) {
-    console.warn(`Live on-chain sync error for ${chain} ${cleanAddr}:`, err);
+    console.error(`Live sync error for ${chain} ${cleanAddr}:`, err);
+    throw err;
   }
 
-  // Graceful fallback if RPC is unreachable
-  return generateAssetsForNewWallet(chain, cleanAddr);
-}
-
-async function fetchCoinbaseAccount(identifier) {
-  // Read-only Coinbase connection returning synced exchange balances & positions
-  // Verified user holdings: $35k in BTC, 0 ETH, -0.40 SOL
-  return [
-    { symbol: 'BTC', balance: 0.41056, isStaked: false },
-    { symbol: 'SOL', balance: -0.40, isStaked: false }
-  ];
+  return [];
 }
 
 export async function getLiveHyperliquidStakingApr() {
@@ -673,10 +781,7 @@ export function generateAssetsForNewWallet(chain, address) {
         { symbol: 'HYPE', balance: Math.round(800 * factor), isStaked: true, protocol: 'Hyperliquid Native Staking', apy: 2.20, rewardsEarned: Number((800 * factor * 0.022 * (30 / 365)).toFixed(2)) }
       ];
     case 'COINBASE':
-      return [
-        { symbol: 'BTC', balance: 0.41056, isStaked: false },
-        { symbol: 'SOL', balance: -0.40, isStaked: false }
-      ];
+      return [];
     default:
       return [];
   }

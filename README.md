@@ -1,6 +1,6 @@
 # TurtleTrack | Multi-Chain Portfolio & Staking Telemetry
 
-> **Slow, steady, sovereign wealth. Non-custodial cross-chain portfolio and staking intelligence platform at turtletrack.io.**
+> **Slow, steady, sovereign wealth. Non-custodial cross-chain portfolio and staking intelligence platform at turtletrack.com.**
 
 TurtleTrack allows users to create an account, connect and label multiple wallet addresses across diverse blockchain ecosystems, and track liquid assets alongside active staking positions, rebase rewards, and vault yields.
 

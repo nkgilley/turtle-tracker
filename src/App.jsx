@@ -29,36 +29,22 @@ function TrackerMain() {
     return u.isDemo ? 'aura_wallets_demo_vip' : `aura_wallets_${u.id}`;
   };
 
-  // Helper to sanitize and upgrade any stale cached APY values or mock holdings from old sessions
+  // Helper to sanitize and upgrade any stale cached APY values from old sessions
   const sanitizeWalletList = (list) => {
-    return (list || []).map(w => {
-      if (w.chain === 'COINBASE') {
-        const hasOldPlaceholder = (w.assets || []).some(a => a.symbol === 'cbETH' || (a.symbol === 'BTC' && a.balance < 0.3));
-        if (hasOldPlaceholder) {
-          return {
-            ...w,
-            assets: [
-              { symbol: 'BTC', balance: 0.41056, isStaked: false },
-              { symbol: 'SOL', balance: -0.40, isStaked: false }
-            ]
-          };
-        }
-      }
-      return {
-        ...w,
-        assets: (w.assets || []).map(a => {
-          if (a.isStaked) {
-            if (a.symbol === 'HYPE' && a.apy > 5) {
-              return { ...a, apy: 2.18, rewardsEarned: Number((a.balance * 0.0218 * (30 / 365)).toFixed(2)) };
-            }
-            if (a.symbol === 'stHYPE' && a.apy > 5) {
-              return { ...a, apy: 2.11, rewardsEarned: Number((a.balance * 0.0211 * (30 / 365)).toFixed(2)) };
-            }
+    return (list || []).map(w => ({
+      ...w,
+      assets: (w.assets || []).map(a => {
+        if (a.isStaked) {
+          if (a.symbol === 'HYPE' && a.apy > 5) {
+            return { ...a, apy: 2.18, rewardsEarned: Number((a.balance * 0.0218 * (30 / 365)).toFixed(2)) };
           }
-          return a;
-        })
-      };
-    });
+          if (a.symbol === 'stHYPE' && a.apy > 5) {
+            return { ...a, apy: 2.11, rewardsEarned: Number((a.balance * 0.0211 * (30 / 365)).toFixed(2)) };
+          }
+        }
+        return a;
+      })
+    }));
   };
 
   // Load wallets: new accounts start with EMPTY array [] and $0 balance
@@ -187,11 +173,11 @@ function TrackerMain() {
       const updatedPrices = await fetchLiveMarketPrices(marketPrices);
       setMarketPrices(updatedPrices);
 
-      // 2. Re-sync all wallets live on-chain
+      // 2. Re-sync all wallets live on-chain & exchange APIs
       const refreshedWallets = await Promise.all(
         wallets.map(async (w) => {
           try {
-            const liveAssets = await fetchLiveWalletAssets(w.chain, w.address);
+            const liveAssets = await fetchLiveWalletAssets(w.chain, w.address, w.privateKey);
             if (liveAssets && liveAssets.length > 0) {
               return { ...w, assets: liveAssets };
             }
@@ -326,7 +312,7 @@ function TrackerMain() {
           <div className="footer-left">
             <div className="footer-logo">
               <TurtleLogo size={22} />
-              <span>TURTLETRACK.IO</span>
+              <span>TURTLETRACK.COM</span>
             </div>
             <p className="footer-desc">
               Slow, steady, sovereign wealth. Non-custodial multi-chain portfolio and staking telemetry for Bitcoin, Ethereum, Solana, Hyperliquid, and Coinbase.
@@ -337,7 +323,7 @@ function TrackerMain() {
               <span className="pulse-dot green"></span>
               <span>All Reef Indexers Nominal</span>
             </div>
-            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack.io. Built for Million-User Scale.</span>
+            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack.com. Built for Million-User Scale.</span>
           </div>
         </div>
       </footer>

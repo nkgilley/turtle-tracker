@@ -63,12 +63,17 @@ export function WalletManagerModal({ isOpen, onClose, wallets, onAddWallet, onDe
       return;
     }
 
+    if (chain === 'COINBASE' && !coinbasePrivateKey.trim()) {
+      setError('Please provide your Coinbase Private Key (PEM format) to query the Coinbase API.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      // Fetch actual real-time on-chain assets and staking positions
-      const assets = await fetchLiveWalletAssets(chain, cleanAddress);
+      // Fetch actual real-time on-chain assets or Coinbase API balances
+      const assets = await fetchLiveWalletAssets(chain, cleanAddress, chain === 'COINBASE' ? coinbasePrivateKey.trim() : null);
 
       const chainObj = SUPPORTED_CHAINS.find(c => c.id === chain);
       const newWallet = {
@@ -76,6 +81,7 @@ export function WalletManagerModal({ isOpen, onClose, wallets, onAddWallet, onDe
         label: label.trim() || `${chainObj?.name || chain} Wallet`,
         chain,
         address: cleanAddress,
+        privateKey: chain === 'COINBASE' ? coinbasePrivateKey.trim() : undefined,
         color: chainObj?.color || '#00F0FF',
         createdAt: new Date().toISOString().split('T')[0],
         isPrimary: false,
@@ -92,12 +98,12 @@ export function WalletManagerModal({ isOpen, onClose, wallets, onAddWallet, onDe
       setSuccessMsg(
         stakedCount > 0 
           ? `Verified! Found ${assets.length} assets including ${stakedCount} staking position(s).`
-          : `Verified! Synced ${assets.length} asset(s) on-chain.`
+          : `Verified! Synced ${assets.length} asset(s) live from ${chain === 'COINBASE' ? 'Coinbase API' : 'on-chain'}.`
       );
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       console.error(err);
-      setError('Failed to fetch on-chain balances. Please try again.');
+      setError(err.message || 'Failed to fetch balances from API. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
