@@ -108,21 +108,21 @@ export function PortfolioChart({ totalNetWorth }) {
         >
           <defs>
             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.32" />
-              <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#08090D" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#16a34a" stopOpacity="0.25" />
+              <stop offset="60%" stopColor="#0d9488" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#fffdfa" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id="strokeGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#8B5CF6" />
-              <stop offset="50%" stopColor="#00F0FF" />
-              <stop offset="100%" stopColor="#20E5A3" />
+              <stop offset="0%" stopColor="#15803d" />
+              <stop offset="50%" stopColor="#0d9488" />
+              <stop offset="100%" stopColor="#0284c7" />
             </linearGradient>
           </defs>
 
           {/* Grid lines */}
-          <line x1="20" y1="50" x2="780" y2="50" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-          <line x1="20" y1="120" x2="780" y2="120" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-          <line x1="20" y1="190" x2="780" y2="190" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
+          <line x1="20" y1="50" x2="780" y2="50" stroke="rgba(28, 25, 23, 0.08)" strokeDasharray="3 3" />
+          <line x1="20" y1="120" x2="780" y2="120" stroke="rgba(28, 25, 23, 0.08)" strokeDasharray="3 3" />
+          <line x1="20" y1="190" x2="780" y2="190" stroke="rgba(28, 25, 23, 0.08)" strokeDasharray="3 3" />
 
           {/* Area fill */}
           {areaPath && <path d={areaPath} fill="url(#chartGradient)" />}
