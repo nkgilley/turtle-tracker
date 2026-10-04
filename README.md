@@ -1,6 +1,10 @@
 # TurtleTrack | Multi-Chain Portfolio & Staking Telemetry
 
-> **Slow, steady, sovereign wealth. Non-custodial cross-chain portfolio and staking intelligence platform at turtletrack.com.**
+> **Slow, steady, non-custodial cross-chain portfolio and staking intelligence platform.**
+
+<p align="center">
+  <img src="docs/demo-dashboard.png" alt="TurtleTrack Multi-Chain Portfolio & Staking Telemetry Dashboard" width="100%" />
+</p>
 
 TurtleTrack allows users to create an account, connect and label multiple wallet addresses across diverse blockchain ecosystems, and track liquid assets alongside active staking positions, rebase rewards, and vault yields.
 
@@ -45,6 +49,46 @@ TurtleTrack allows users to create an account, connect and label multiple wallet
   - Deep cosmic obsidian dark mode with glowing cyan, violet, and emerald accents.
   - Smooth glassmorphism surfaces (`backdrop-filter: blur(16px)`).
   - Fully responsive across desktop, tablet, and mobile devices.
+
+---
+
+## 🐳 Docker Deployment
+
+TurtleTrack is containerized and available on Docker Hub as [`nkgilley/turtletrack`](https://hub.docker.com/r/nkgilley/turtletrack).
+
+### Quick Run
+```bash
+docker run -d \
+  --name turtletrack \
+  -p 8550:80 \
+  --restart unless-stopped \
+  nkgilley/turtletrack:latest
+```
+
+### Run with Custom Coinbase CDP & Solana RPC (Optional)
+```bash
+docker run -d \
+  --name turtletrack \
+  -p 8550:80 \
+  -e COINBASE_API_KEY_NAME="organizations/.../apiKeys/..." \
+  -e COINBASE_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----" \
+  -e SOLANA_RPC_URL="https://api.mainnet-beta.solana.com" \
+  --restart unless-stopped \
+  nkgilley/turtletrack:v1.0.0
+```
+
+### Docker Compose
+```yaml
+services:
+  turtletrack:
+    image: nkgilley/turtletrack:v1.0.0
+    container_name: turtletrack
+    ports:
+      - "8550:80"
+    environment:
+      - PORT=80
+    restart: unless-stopped
+```
 
 ---
 
