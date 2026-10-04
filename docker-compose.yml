@@ -6,6 +6,6 @@ services:
     container_name: turtletrack
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8550:80"
     environment:
       - NODE_ENV=production
