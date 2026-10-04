@@ -43,25 +43,10 @@ export function AuthModal({ isOpen, onClose }) {
     onClose();
   };
 
-  // Ethereum Web3 connection (MetaMask, Rabby, Coinbase Wallet) or manual address
-  const handleConnectEthereum = async () => {
+  // Ethereum extension connection (MetaMask, Rabby, Coinbase Wallet)
+  const handleConnectEthereumExtension = async () => {
     setError('');
     setIsConnecting(true);
-
-    if (walletAddress.trim()) {
-      const clean = walletAddress.trim();
-      if (!clean.startsWith('0x') || clean.length < 10) {
-        setError('Please enter a valid 0x Ethereum address.');
-        setIsConnecting(false);
-        return;
-      }
-      loginWithWallet('ETH', clean);
-      setIsConnecting(false);
-      onClose();
-      return;
-    }
-
-    // Try browser extension (window.ethereum)
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -76,34 +61,30 @@ export function AuthModal({ isOpen, onClose }) {
         setIsConnecting(false);
         return;
       }
+    } else {
+      setError('No Ethereum extension detected. Please enter your address below.');
     }
-
-    // If extension not present, switch to manual entry view
-    setActiveView('wallet-eth');
     setIsConnecting(false);
   };
 
-  // Solana Web3 connection (Phantom, Solflare) or manual address
-  const handleConnectSolana = async () => {
+  // Ethereum manual address or quick-fill connection
+  const handleConnectEthereumAddress = (addrToUse) => {
     setError('');
-    setIsConnecting(true);
-
-    if (walletAddress.trim()) {
-      const clean = walletAddress.trim();
-      if (clean.length < 32 || clean.length > 44) {
-        setError('Please enter a valid base58 Solana address.');
-        setIsConnecting(false);
-        return;
-      }
-      loginWithWallet('SOL', clean);
-      setIsConnecting(false);
-      onClose();
+    const target = (addrToUse || walletAddress).trim();
+    if (!target.startsWith('0x') || target.length < 10) {
+      setError('Please enter a valid 0x Ethereum address.');
       return;
     }
+    loginWithWallet('ETH', target);
+    onClose();
+  };
 
-    // Try browser extension (window.solana or window.phantom)
-    const solProvider = window.solana || window.phantom?.solana;
-    if (typeof window !== 'undefined' && solProvider) {
+  // Solana extension connection (Phantom, Solflare)
+  const handleConnectSolanaExtension = async () => {
+    setError('');
+    setIsConnecting(true);
+    const solProvider = typeof window !== 'undefined' ? (window.solana || window.phantom?.solana) : null;
+    if (solProvider) {
       try {
         const resp = await solProvider.connect();
         const pubKey = resp.publicKey ? resp.publicKey.toString() : null;
@@ -118,11 +99,22 @@ export function AuthModal({ isOpen, onClose }) {
         setIsConnecting(false);
         return;
       }
+    } else {
+      setError('No Solana extension detected. Please enter your address below.');
     }
-
-    // If extension not present, switch to manual entry view
-    setActiveView('wallet-sol');
     setIsConnecting(false);
+  };
+
+  // Solana manual address or quick-fill connection
+  const handleConnectSolanaAddress = (addrToUse) => {
+    setError('');
+    const target = (addrToUse || walletAddress).trim();
+    if (target.length < 32 || target.length > 44) {
+      setError('Please enter a valid base58 Solana address.');
+      return;
+    }
+    loginWithWallet('SOL', target);
+    onClose();
   };
 
   const handleDemoClick = () => {
@@ -198,21 +190,19 @@ export function AuthModal({ isOpen, onClose }) {
                 <button 
                   type="button" 
                   className="btn-wallet-auth eth" 
-                  onClick={handleConnectEthereum}
-                  disabled={isConnecting}
+                  onClick={() => { setError(''); setActiveView('wallet-eth'); }}
                 >
                   <span className="wallet-btn-icon">Ξ</span>
                   <div className="wallet-btn-content">
                     <span className="wallet-btn-title">Ethereum / EVM</span>
-                    <span className="wallet-btn-hint">MetaMask, Rabby, Rainbow</span>
+                    <span className="wallet-btn-hint">Auto-tracks ETH, L2s &amp; Hyperliquid</span>
                   </div>
                 </button>
 
                 <button 
                   type="button" 
                   className="btn-wallet-auth sol" 
-                  onClick={handleConnectSolana}
-                  disabled={isConnecting}
+                  onClick={() => { setError(''); setActiveView('wallet-sol'); }}
                 >
                   <span className="wallet-btn-icon">◎</span>
                   <div className="wallet-btn-content">
@@ -296,8 +286,29 @@ export function AuthModal({ isOpen, onClose }) {
           {activeView === 'wallet-eth' && (
             <div className="auth-flow-sub">
               <p className="auth-subtitle">
-                Enter your Ethereum / ENS address to sign in and auto-track all L1 and L2 assets:
+                Connect your Ethereum wallet. Automatically tracks Ethereum, all L2s (Arbitrum, Base, OP, Polygon, AVAX), and Hyperliquid:
               </p>
+
+              {typeof window !== 'undefined' && window.ethereum && (
+                <>
+                  <button 
+                    type="button" 
+                    className="btn-wallet-auth eth full-width"
+                    onClick={handleConnectEthereumExtension}
+                    disabled={isConnecting}
+                  >
+                    <span className="wallet-btn-icon">🦊</span>
+                    <div className="wallet-btn-content">
+                      <span className="wallet-btn-title">Connect Web3 Extension</span>
+                      <span className="wallet-btn-hint">Rabby, MetaMask, Rainbow, Coinbase</span>
+                    </div>
+                  </button>
+
+                  <div className="auth-divider">
+                    <span>OR ENTER ADDRESS DIRECTLY</span>
+                  </div>
+                </>
+              )}
 
               <div className="form-group">
                 <label className="form-label">Ethereum Address or ENS</label>
@@ -328,10 +339,10 @@ export function AuthModal({ isOpen, onClose }) {
               <button 
                 type="button" 
                 className="btn-primary full-width"
-                onClick={handleConnectEthereum}
+                onClick={() => handleConnectEthereumAddress()}
                 disabled={isConnecting}
               >
-                Sign In with Ethereum
+                Sign In with Ethereum Address
               </button>
 
               <button 
@@ -344,12 +355,33 @@ export function AuthModal({ isOpen, onClose }) {
             </div>
           )}
 
-          {/* VIEW 4: Solana Wallet Input (if extension rejected or not detected) */}
+          {/* VIEW 4: Solana Wallet Input */}
           {activeView === 'wallet-sol' && (
             <div className="auth-flow-sub">
               <p className="auth-subtitle">
-                Enter your Solana base58 address to sign in and auto-track SOL and SPL tokens:
+                Connect your Solana wallet to track SOL and SPL tokens:
               </p>
+
+              {typeof window !== 'undefined' && (window.solana || window.phantom?.solana) && (
+                <>
+                  <button 
+                    type="button" 
+                    className="btn-wallet-auth sol full-width"
+                    onClick={handleConnectSolanaExtension}
+                    disabled={isConnecting}
+                  >
+                    <span className="wallet-btn-icon">🟣</span>
+                    <div className="wallet-btn-content">
+                      <span className="wallet-btn-title">Connect Web3 Extension</span>
+                      <span className="wallet-btn-hint">Phantom, Solflare</span>
+                    </div>
+                  </button>
+
+                  <div className="auth-divider">
+                    <span>OR ENTER ADDRESS DIRECTLY</span>
+                  </div>
+                </>
+              )}
 
               <div className="form-group">
                 <label className="form-label">Solana Wallet Address</label>
@@ -380,10 +412,10 @@ export function AuthModal({ isOpen, onClose }) {
               <button 
                 type="button" 
                 className="btn-primary full-width"
-                onClick={handleConnectSolana}
+                onClick={() => handleConnectSolanaAddress()}
                 disabled={isConnecting}
               >
-                Sign In with Solana
+                Sign In with Solana Address
               </button>
 
               <button 

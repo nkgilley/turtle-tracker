@@ -47,18 +47,85 @@ function TrackerMain() {
     }));
   };
 
+  // Helper to generate default wallet entries when logging in with a crypto wallet
+  const createWalletsForLogin = (provider, walletChain, walletAddress) => {
+    if (provider !== 'wallet' || !walletAddress) return [];
+    const addr = walletAddress.trim();
+    const dateStr = new Date().toISOString().split('T')[0];
+
+    if (walletChain === 'ETH') {
+      return [
+        {
+          id: `w-eth-${addr.toLowerCase()}`,
+          label: 'Ethereum & L2 Ecosystem',
+          chain: 'ETH',
+          address: addr,
+          color: '#627EEA',
+          createdAt: dateStr,
+          isPrimary: true,
+          assets: []
+        },
+        {
+          id: `w-hl-${addr.toLowerCase()}`,
+          label: 'Hyperliquid L1 & EVM',
+          chain: 'HL',
+          address: addr,
+          color: '#20E5A3',
+          createdAt: dateStr,
+          isPrimary: false,
+          assets: []
+        }
+      ];
+    }
+
+    if (walletChain === 'SOL') {
+      return [
+        {
+          id: `w-sol-${addr.toLowerCase()}`,
+          label: 'Solana Web3 Account',
+          chain: 'SOL',
+          address: addr,
+          color: '#14F195',
+          createdAt: dateStr,
+          isPrimary: true,
+          assets: []
+        }
+      ];
+    }
+
+    return [];
+  };
+
   // Load wallets: new accounts start with EMPTY array [] and $0 balance
   const [wallets, setWallets] = useState(() => {
     const key = getWalletStorageKey(user);
     const legacyKey = getLegacyStorageKey(user);
     try {
       const saved = localStorage.getItem(key) || localStorage.getItem(legacyKey);
-      if (saved) return sanitizeWalletList(JSON.parse(saved));
+      if (saved) {
+        const parsed = sanitizeWalletList(JSON.parse(saved));
+        if (parsed.length > 0) {
+          if (user?.provider === 'wallet' && user?.walletAddress) {
+            const defaults = createWalletsForLogin(user.provider, user.walletChain, user.walletAddress);
+            const missing = defaults.filter(def => 
+              !parsed.some(w => w.chain === def.chain && w.address.toLowerCase() === def.address.toLowerCase())
+            );
+            if (missing.length > 0) {
+              return [...missing, ...parsed];
+            }
+          }
+          return parsed;
+        }
+      }
     } catch {
       // fallback
     }
     // If demo account, load demo wallets; if new account, start with 0
-    return user?.isDemo ? INITIAL_DEMO_WALLETS : [];
+    if (user?.isDemo) return INITIAL_DEMO_WALLETS;
+    if (user?.provider === 'wallet' && user?.walletAddress) {
+      return createWalletsForLogin(user.provider, user.walletChain, user.walletAddress);
+    }
+    return [];
   });
 
   const [marketPrices, setMarketPrices] = useState(INITIAL_MARKET_PRICES);
@@ -79,22 +146,14 @@ function TrackerMain() {
       if (saved) {
         const parsed = sanitizeWalletList(JSON.parse(saved));
         if (parsed.length > 0) {
-          // If logged in via crypto wallet, ensure that wallet is in the list
+          // If logged in via crypto wallet, ensure that both ETH/L2s and Hyperliquid are added
           if (user?.provider === 'wallet' && user?.walletAddress) {
-            const exists = parsed.some(w => w.address.toLowerCase() === user.walletAddress.toLowerCase());
-            if (!exists) {
-              const isEth = user.walletChain === 'ETH';
-              const newWallet = {
-                id: `w-${user.walletChain.toLowerCase()}-${Date.now()}`,
-                label: `${isEth ? 'Ethereum' : 'Solana'} Web3 Account`,
-                chain: user.walletChain,
-                address: user.walletAddress,
-                color: isEth ? '#627EEA' : '#14F195',
-                createdAt: new Date().toISOString().split('T')[0],
-                isPrimary: true,
-                assets: []
-              };
-              setWallets([newWallet, ...parsed]);
+            const defaults = createWalletsForLogin(user.provider, user.walletChain, user.walletAddress);
+            const missing = defaults.filter(def => 
+              !parsed.some(w => w.chain === def.chain && w.address.toLowerCase() === def.address.toLowerCase())
+            );
+            if (missing.length > 0) {
+              setWallets([...missing, ...parsed]);
               return;
             }
           }
@@ -107,18 +166,7 @@ function TrackerMain() {
     if (user?.isDemo) {
       setWallets(INITIAL_DEMO_WALLETS);
     } else if (user?.provider === 'wallet' && user?.walletAddress) {
-      const isEth = user.walletChain === 'ETH';
-      const autoWallet = {
-        id: `w-${user.walletChain.toLowerCase()}-${Date.now()}`,
-        label: `${isEth ? 'Ethereum' : 'Solana'} Web3 Account`,
-        chain: user.walletChain,
-        address: user.walletAddress,
-        color: isEth ? '#627EEA' : '#14F195',
-        createdAt: new Date().toISOString().split('T')[0],
-        isPrimary: true,
-        assets: []
-      };
-      setWallets([autoWallet]);
+      setWallets(createWalletsForLogin(user.provider, user.walletChain, user.walletAddress));
     } else {
       setWallets([]);
     }
@@ -131,6 +179,39 @@ function TrackerMain() {
       localStorage.setItem(key, JSON.stringify(wallets));
     } catch {}
   }, [wallets, user?.id, user?.isDemo]);
+
+  // Auto-sync live on-chain balances for any newly added wallets without assets
+  useEffect(() => {
+    const unhydrated = wallets.filter(w => !w.isSynced && (!w.assets || w.assets.length === 0));
+    if (unhydrated.length > 0) {
+      let isMounted = true;
+      setIsRefreshing(true);
+      Promise.all(
+        wallets.map(async (w) => {
+          if (!w.isSynced && (!w.assets || w.assets.length === 0)) {
+            try {
+              const liveAssets = await fetchLiveWalletAssets(w.chain, w.address, w.privateKey);
+              return {
+                ...w,
+                assets: liveAssets || [],
+                isSynced: true
+              };
+            } catch (err) {
+              console.warn(`Sync failed for ${w.chain} wallet ${w.address}:`, err);
+              return { ...w, isSynced: true };
+            }
+          }
+          return w;
+        })
+      ).then(updated => {
+        if (isMounted) {
+          setWallets(updated);
+          setIsRefreshing(false);
+        }
+      });
+      return () => { isMounted = false; };
+    }
+  }, [wallets.map(w => `${w.chain}-${w.address}`).join(',')]);
 
   // Initial live market price fetch from Hyperliquid & co
   useEffect(() => {
