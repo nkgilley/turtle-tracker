@@ -168,7 +168,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
                     ${pos.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="align-right">
-                    <span className="apy-tag green">{pos.apy.toFixed(1)}%</span>
+                    <span className="apy-tag green">{pos.apy.toFixed(2)}%</span>
                   </td>
                   <td className="align-right font-mono green-text">
                     +{pos.rewardsEarned.toLocaleString('en-US', { maximumFractionDigits: 4 })} {pos.symbol}

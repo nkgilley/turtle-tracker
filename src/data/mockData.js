@@ -104,7 +104,7 @@ export const INITIAL_DEMO_WALLETS = [
     isPrimary: true,
     assets: [
       { symbol: 'ETH', balance: 0.7038, isStaked: false },
-      { symbol: 'ETH', balance: 32.00, isStaked: true, protocol: 'Native Beacon Validator', apy: 3.4, rewardsEarned: 1.15 },
+      { symbol: 'ETH', balance: 32.00, isStaked: true, protocol: 'Native Beacon Validator', apy: 2.10, rewardsEarned: 0.68 },
       { symbol: 'NXM', balance: 0.0656, isStaked: false },
       { symbol: 'USDT', balance: 0.98, isStaked: false }
     ]

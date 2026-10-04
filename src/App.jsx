@@ -41,6 +41,9 @@ function TrackerMain() {
           if (a.symbol === 'stHYPE' && a.apy > 5) {
             return { ...a, apy: 2.11, rewardsEarned: Number((a.balance * 0.0211 * (30 / 365)).toFixed(2)) };
           }
+          if (a.symbol === 'ETH' && (a.protocol?.includes('Beacon') || a.protocol?.includes('Validator')) && (a.apy > 2.5 || a.apy === 3.4)) {
+            return { ...a, apy: 2.10, rewardsEarned: Number((a.balance * 0.0210 * (31 / 365)).toFixed(4)) };
+          }
         }
         return a;
       })

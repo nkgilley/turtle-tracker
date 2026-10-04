@@ -307,7 +307,7 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
                     <td className="align-right">
                       {item.isStaked && item.apy ? (
                         <div className="yield-cell">
-                          <span className="yield-apy">{item.apy.toFixed(1)}% APY</span>
+                          <span className="yield-apy">{item.apy.toFixed(2)}% APY</span>
                           {item.rewardsEarned > 0 && (
                             <span className="yield-rewards">
                               +{item.rewardsEarned.toLocaleString('en-US', { maximumFractionDigits: 3 })} {item.symbol} earned

@@ -748,8 +748,8 @@ async function fetchEthereumOnChain(address) {
       network: 'Ethereum',
       isStaked: true,
       protocol: 'Native Beacon Validator',
-      apy: 3.4,
-      rewardsEarned: 1.15
+      apy: 2.10, // Beaconcha.in calibrated APR (7d: 2.09%, 31d: 2.10%, 365d: 2.23%)
+      rewardsEarned: Number((32.0 * 0.0210 * (31 / 365)).toFixed(4))
     });
   }
 
@@ -787,7 +787,7 @@ export function generateAssetsForNewWallet(chain, address) {
     case 'ETH':
       return [
         { symbol: 'ETH', balance: Number((0.7 * factor).toFixed(3)), isStaked: false },
-        { symbol: 'ETH', balance: 32.0, isStaked: true, protocol: 'Native Beacon Validator', apy: 3.4, rewardsEarned: 0.85 }
+        { symbol: 'ETH', balance: 32.0, isStaked: true, protocol: 'Native Beacon Validator', apy: 2.10, rewardsEarned: 0.55 }
       ];
     case 'SOL':
       return [
@@ -864,6 +864,9 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
         // Self-heal any stale cached APY from previous client sessions
         if (asset.symbol === 'HYPE' && effectiveApy > 5) effectiveApy = 2.18;
         if (asset.symbol === 'stHYPE' && effectiveApy > 5) effectiveApy = 2.11;
+        if (asset.symbol === 'ETH' && (asset.protocol?.includes('Beacon') || asset.protocol?.includes('Validator'))) {
+          if (effectiveApy > 2.5 || effectiveApy === 3.4) effectiveApy = 2.10;
+        }
         const annualYield = assetValue * (effectiveApy / 100);
         totalAnnualYield += annualYield;
 
@@ -893,6 +896,9 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
       let rowApy = asset.apy;
       if (asset.symbol === 'HYPE' && rowApy > 5) rowApy = 2.18;
       if (asset.symbol === 'stHYPE' && rowApy > 5) rowApy = 2.11;
+      if (asset.symbol === 'ETH' && (asset.protocol?.includes('Beacon') || asset.protocol?.includes('Validator'))) {
+        if (rowApy > 2.5 || rowApy === 3.4) rowApy = 2.10;
+      }
 
       flattenedAssets.push({
         id: `${wallet.id}-${asset.symbol}-${asset.network || wallet.chain}-${asset.isStaked ? 'staked' : 'liquid'}-${Math.random().toString(36).substring(2, 6)}`,
