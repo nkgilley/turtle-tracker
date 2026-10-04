@@ -52,12 +52,15 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = (email, name) => {
-    const userEmail = email || 'user@turtletrack.com';
-    const userName = name || userEmail.split('@')[0];
+    if (!email || !email.includes('@')) {
+      return { success: false, error: 'A valid email address is required.' };
+    }
+    const cleanEmail = email.trim();
+    const userName = name || cleanEmail.split('@')[0];
     const googleUser = {
-      id: `usr-google-${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      id: `usr-google-${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
       name: userName,
-      email: userEmail,
+      email: cleanEmail,
       provider: 'google',
       isDemo: false
     };
