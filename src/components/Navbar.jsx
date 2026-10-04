@@ -73,7 +73,6 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
                 </div>
                 <div className="user-meta hide-mobile">
                   <span className="user-name">{user.name}</span>
-                  <span className="user-tier">{user.tier}</span>
                 </div>
               </div>
             ) : (

@@ -17,7 +17,6 @@ export function AuthProvider({ children }) {
       id: 'usr-main-account',
       name: 'Portfolio Owner',
       email: 'owner@portfolio.vault',
-      tier: 'Standard',
       isDemo: false
     };
   });
@@ -35,7 +34,6 @@ export function AuthProvider({ children }) {
       id: `usr-${Date.now()}`,
       name: email.split('@')[0],
       email,
-      tier: 'Pro Member',
       isDemo: false
     };
     setUser(newUser);
@@ -47,7 +45,6 @@ export function AuthProvider({ children }) {
       id: `usr-${Date.now()}`,
       name: name || email.split('@')[0],
       email,
-      tier: 'Pro Member',
       isDemo: false
     };
     setUser(newUser);
@@ -63,7 +60,6 @@ export function AuthProvider({ children }) {
       id: 'usr-vip-001',
       name: 'Alex Sterling',
       email: 'alex.sterling@aura-vault.eth',
-      tier: 'Diamond Tier',
       isDemo: true
     };
     setUser(demoUser);
