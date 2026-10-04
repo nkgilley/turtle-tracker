@@ -483,10 +483,7 @@ async function fetchSolanaOnChain(address) {
 
   // 1. Prepare batch calls: getBalance + getAccountInfo for all tracked token ATAs
   const tokenAtas = TRACKED_SOLANA_TOKENS.map(t => {
-    let ata = deriveAta(cleanAddr, t.mint);
-    if (!ata && cleanAddr.toLowerCase() === 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK' && t.symbol === 'JitoSOL') {
-      ata = '3YzUhTTRPg8EJn4o2FDZ3B2QzgTfqMxkbr7LPeXwLQiB';
-    }
+    const ata = deriveAta(cleanAddr, t.mint);
     return { ...t, ata };
   }).filter(t => !!t.ata);
 
@@ -606,30 +603,6 @@ async function fetchSolanaOnChain(address) {
     }
   } catch (splErr) {
     console.warn('SPL token scan warning:', splErr);
-  }
-
-  // 3. User Wallet Reliability Assurance
-  // If the user's specific wallet address is checked, guarantee that JitoSOL is tracked
-  if (cleanAddr.toLowerCase() === 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK') {
-    const hasJito = assets.some(a => a.symbol === 'JitoSOL');
-    if (!hasJito) {
-      assets.push({
-        symbol: 'JitoSOL',
-        balance: 399.146,
-        isStaked: true,
-        protocol: 'Jito MEV Stake',
-        apy: 7.9,
-        rewardsEarned: 15.167
-      });
-    }
-    const hasSol = assets.some(a => a.symbol === 'SOL');
-    if (!hasSol) {
-      assets.push({
-        symbol: 'SOL',
-        balance: 0.4627,
-        isStaked: false
-      });
-    }
   }
 
   return assets;
@@ -768,7 +741,7 @@ async function fetchEthereumOnChain(address) {
   });
 
   // 3. Native Staked ETH Validator check
-  if (hasBeaconWithdrawals || cleanAddr.toLowerCase() === '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045') {
+  if (hasBeaconWithdrawals) {
     assets.push({
       symbol: 'ETH',
       balance: 32.0,

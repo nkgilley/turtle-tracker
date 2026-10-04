@@ -322,16 +322,7 @@ export function AuthModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="quick-fill-row">
-                <span className="quick-fill-label">Quick fill:</span>
-                <button 
-                  type="button" 
-                  className="quick-pill" 
-                  onClick={() => setWalletAddress('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')}
-                >
-                  0xd8dA...6045 (My ETH Wallet)
-                </button>
-              </div>
+
 
               <button 
                 type="button" 
@@ -395,16 +386,7 @@ export function AuthModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="quick-fill-row">
-                <span className="quick-fill-label">Quick fill:</span>
-                <button 
-                  type="button" 
-                  className="quick-pill" 
-                  onClick={() => setWalletAddress('DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK')}
-                >
-                  DYw8...NSKK (My SOL Wallet)
-                </button>
-              </div>
+
 
               <button 
                 type="button" 
