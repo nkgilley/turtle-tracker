@@ -17,4 +17,5 @@
   <PostArgs/>
   <CPUset/>
   <Config Name="WebUI Port" Target="80" Default="8550" Mode="tcp" Description="Host port to access TurtleTrack Web UI" Type="Port" Display="always" Required="true" Mask="false">8550</Config>
+  <Config Name="AppData Storage" Target="/app/data" Default="/mnt/user/appdata/turtletrack/data" Mode="rw" Description="Persistent directory for SQLite database and multi-device accounts" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/turtletrack/data</Config>
 </Container>

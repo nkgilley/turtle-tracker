@@ -56,11 +56,12 @@ TurtleTrack allows users to create an account, connect and label multiple wallet
 
 TurtleTrack is containerized and available on Docker Hub as [`nkgilley/turtletrack`](https://hub.docker.com/r/nkgilley/turtletrack).
 
-### Quick Run
+### Quick Run (with Persistent SQLite Storage)
 ```bash
 docker run -d \
   --name turtletrack \
   -p 8550:80 \
+  -v turtletrack-data:/app/data \
   --restart unless-stopped \
   nkgilley/turtletrack:latest
 ```
@@ -70,23 +71,26 @@ docker run -d \
 docker run -d \
   --name turtletrack \
   -p 8550:80 \
+  -v /mnt/user/appdata/turtletrack/data:/app/data \
   -e COINBASE_API_KEY_NAME="organizations/.../apiKeys/..." \
   -e COINBASE_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----" \
   -e SOLANA_RPC_URL="https://api.mainnet-beta.solana.com" \
   --restart unless-stopped \
-  nkgilley/turtletrack:v1.0.0
+  nkgilley/turtletrack:latest
 ```
 
 ### Docker Compose
 ```yaml
 services:
   turtletrack:
-    image: nkgilley/turtletrack:v1.0.0
+    image: nkgilley/turtletrack:latest
     container_name: turtletrack
     ports:
       - "8550:80"
     environment:
       - PORT=80
+    volumes:
+      - ./data:/app/data
     restart: unless-stopped
 ```
 

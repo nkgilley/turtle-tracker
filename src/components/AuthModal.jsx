@@ -17,7 +17,7 @@ export function AuthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setError('Please provide a valid email address.');
@@ -28,15 +28,32 @@ export function AuthModal({ isOpen, onClose }) {
       return;
     }
 
-    if (isSignUp) {
-      signup(name, email, password);
-    } else {
-      login(email, password);
+    setIsConnecting(true);
+    setError('');
+
+    try {
+      if (isSignUp) {
+        const res = await signup(name, email, password);
+        if (!res.success) {
+          setError(res.error || 'Failed to create account.');
+          setIsConnecting(false);
+          return;
+        }
+      } else {
+        const res = await login(email, password);
+        if (!res.success) {
+          setError(res.error || 'Invalid email or password.');
+          setIsConnecting(false);
+          return;
+        }
+      }
+      setIsConnecting(false);
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Authentication error.');
+      setIsConnecting(false);
     }
-    onClose();
   };
-
-
 
   // Ethereum extension connection (MetaMask, Rabby, Coinbase Wallet)
   const handleConnectEthereumExtension = async () => {
@@ -46,7 +63,7 @@ export function AuthModal({ isOpen, onClose }) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         if (accounts && accounts[0]) {
-          loginWithWallet('ETH', accounts[0]);
+          await loginWithWallet('ETH', accounts[0]);
           setIsConnecting(false);
           onClose();
           return;
@@ -63,15 +80,22 @@ export function AuthModal({ isOpen, onClose }) {
   };
 
   // Ethereum manual address or quick-fill connection
-  const handleConnectEthereumAddress = (addrToUse) => {
+  const handleConnectEthereumAddress = async (addrToUse) => {
     setError('');
     const target = (addrToUse || walletAddress).trim();
     if (!target.startsWith('0x') || target.length < 10) {
       setError('Please enter a valid 0x Ethereum address.');
       return;
     }
-    loginWithWallet('ETH', target);
-    onClose();
+    setIsConnecting(true);
+    try {
+      await loginWithWallet('ETH', target);
+      setIsConnecting(false);
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Failed to authenticate wallet address.');
+      setIsConnecting(false);
+    }
   };
 
   // Solana extension connection (Phantom, Solflare)
@@ -84,7 +108,7 @@ export function AuthModal({ isOpen, onClose }) {
         const resp = await solProvider.connect();
         const pubKey = resp.publicKey ? resp.publicKey.toString() : null;
         if (pubKey) {
-          loginWithWallet('SOL', pubKey);
+          await loginWithWallet('SOL', pubKey);
           setIsConnecting(false);
           onClose();
           return;
@@ -101,15 +125,22 @@ export function AuthModal({ isOpen, onClose }) {
   };
 
   // Solana manual address or quick-fill connection
-  const handleConnectSolanaAddress = (addrToUse) => {
+  const handleConnectSolanaAddress = async (addrToUse) => {
     setError('');
     const target = (addrToUse || walletAddress).trim();
     if (target.length < 32 || target.length > 44) {
       setError('Please enter a valid base58 Solana address.');
       return;
     }
-    loginWithWallet('SOL', target);
-    onClose();
+    setIsConnecting(true);
+    try {
+      await loginWithWallet('SOL', target);
+      setIsConnecting(false);
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Failed to authenticate Solana address.');
+      setIsConnecting(false);
+    }
   };
 
   const handleDemoClick = () => {

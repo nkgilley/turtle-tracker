@@ -9,3 +9,6 @@ services:
       - "8550:80"
     environment:
       - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+

@@ -1,5 +1,5 @@
 # Stage 1: Build the React + Vite static bundle
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -13,13 +13,14 @@ COPY . .
 # Build the production bundle
 RUN npm run build
 
-# Stage 2: Production Node.js server with Coinbase CDP & Solana RPC proxying
-FROM node:20-alpine AS runner
+# Stage 2: Production Node.js server with SQLite, Coinbase CDP & Solana RPC proxying
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=80
+ENV DATA_DIR=/app/data
 
 # Copy package files and install production dependencies
 COPY package*.json ./
@@ -28,8 +29,12 @@ RUN npm ci --omit=dev
 # Copy built frontend assets from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy server code
-COPY server.js ./
+# Copy server and database files
+COPY server.js db.js ./
+
+# Data volume for persistent SQLite database
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
 
 # Expose port 80
 EXPOSE 80

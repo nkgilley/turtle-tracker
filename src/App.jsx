@@ -16,7 +16,7 @@ import { Shield, Sparkles, Layers, Zap, Plus, ArrowUpRight, Wallet } from 'lucid
 import './index.css';
 
 function TrackerMain() {
-  const { user, switchToDemo } = useAuth();
+  const { user, switchToDemo, serverWallets, syncWalletsToServer } = useAuth();
 
   // Scope wallets storage key per user ID to keep new accounts completely fresh
   const getWalletStorageKey = (u) => {
@@ -140,6 +140,14 @@ function TrackerMain() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
 
+  // Sync wallets when serverWallets are received from SQLite backend across devices
+  useEffect(() => {
+    if (serverWallets && Array.isArray(serverWallets)) {
+      const sanitized = sanitizeWalletList(serverWallets);
+      setWallets(sanitized);
+    }
+  }, [serverWallets]);
+
   // Sync wallets when user account switches (e.g. signup, demo switch, wallet login)
   useEffect(() => {
     const key = getWalletStorageKey(user);
@@ -175,13 +183,17 @@ function TrackerMain() {
     }
   }, [user?.id, user?.isDemo, user?.provider, user?.walletAddress, user?.walletChain]);
 
-  // Persist wallets
+  // Persist wallets to localStorage and sync to SQLite database on the server
   useEffect(() => {
     const key = getWalletStorageKey(user);
     try {
       localStorage.setItem(key, JSON.stringify(wallets));
     } catch {}
-  }, [wallets, user?.id, user?.isDemo]);
+
+    if (user && !user.isDemo) {
+      syncWalletsToServer(wallets);
+    }
+  }, [wallets, user?.id, user?.isDemo, syncWalletsToServer]);
 
   // Auto-sync live on-chain balances for any newly added wallets without assets
   useEffect(() => {

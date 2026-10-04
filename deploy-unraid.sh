@@ -89,12 +89,14 @@ echo -e "${GREEN}✓ Docker image ready.${NC}"
 # 5. Stop existing container and start new one
 echo -e "${BLUE}[5/5] Launching container on port ${PORT}...${NC}"
 ssh "${UNRAID_HOST}" "
+  mkdir -p ${REMOTE_APPDATA}/data
   docker stop ${APP_NAME} 2>/dev/null || true
   docker rm ${APP_NAME} 2>/dev/null || true
   docker run -d \
     --name ${APP_NAME} \
     --restart unless-stopped \
     -p ${PORT}:80 \
+    -v ${REMOTE_APPDATA}/data:/app/data \
     \${TARGET_IMAGE:-\"${TARGET_IMAGE}\"}
 "
 
