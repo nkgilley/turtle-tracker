@@ -14,7 +14,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
       chain: 'Bitcoin (BTC)',
       protocol: 'Babylon & Lombard',
       tag: 'PoS Shared Security',
-      color: '#F7931A',
+      color: '#b45309',
       symbol: 'LBTC',
       apy: '4.8%',
       features: ['Self-custodial BTC timestamping', 'No bridging required', 'Lombard DeFi yield multiplier']
@@ -23,7 +23,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
       chain: 'Ethereum (ETH)',
       protocol: 'Lido & EigenLayer',
       tag: 'LST & Restaking',
-      color: '#627EEA',
+      color: '#4338ca',
       symbol: 'stETH / wstETH',
       apy: '3.8% - 5.4%',
       features: ['Consensus & Execution layer rewards', 'AVS Actively Validated Services yield', 'Instant liquidity on DEXes']
@@ -32,7 +32,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
       chain: 'Solana (SOL)',
       protocol: 'Jito MEV Stake',
       tag: 'MEV Yield Boosted',
-      color: '#14F195',
+      color: '#047857',
       symbol: 'JitoSOL',
       apy: '7.9%',
       features: ['MEV tip distribution to stakers', 'Decentralized validator allocation', 'Zero lockup liquidity token']
@@ -41,9 +41,9 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
       chain: 'Hyperliquid (HL)',
       protocol: 'HYPE Staking & HLP',
       tag: 'PoS Emissions & L1 Fees',
-      color: '#20E5A3',
+      color: '#0f766e',
       symbol: 'HYPE / stHYPE / HLP',
-      apy: '2.18% (Native) / 20.4% (HLP)',
+      apy: '2.2% - 20.4%',
       features: ['Consensus delegation yields ~2.18% net APR', 'stHYPE liquid staking yields ~2.14% APY', 'HLP market-making vault yields ~18% - 22%']
     }
   ];
@@ -91,7 +91,7 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
               <div className="proto-badge" style={{ backgroundColor: `${proto.color}15`, color: proto.color }}>
                 {proto.chain}
               </div>
-              <span className="proto-apy" style={{ color: proto.color }}>{proto.apy} APY</span>
+              <span className="proto-apy">{proto.apy} APY</span>
             </div>
 
             <h3 className="proto-name">{proto.protocol}</h3>

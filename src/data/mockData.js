@@ -1,10 +1,10 @@
 // Initial sample market prices and supported chains
 export const SUPPORTED_CHAINS = [
-  { id: 'BTC', name: 'Bitcoin', symbol: 'BTC', color: '#F7931A', icon: '₿', explorer: 'https://mempool.space/address/' },
-  { id: 'ETH', name: 'Ethereum', symbol: 'ETH', color: '#627EEA', icon: 'Ξ', explorer: 'https://etherscan.io/address/' },
-  { id: 'SOL', name: 'Solana', symbol: 'SOL', color: '#14F195', icon: '◎', explorer: 'https://solscan.io/account/' },
-  { id: 'HL', name: 'Hyperliquid', symbol: 'HYPE', color: '#20E5A3', icon: '⚡', explorer: 'https://app.hyperliquid.xyz/explorer/address/' },
-  { id: 'COINBASE', name: 'Coinbase', symbol: 'COIN', color: '#0052FF', icon: '🔵', explorer: 'https://coinbase.com' },
+  { id: 'BTC', name: 'Bitcoin', symbol: 'BTC', color: '#b45309', icon: '₿', explorer: 'https://mempool.space/address/' },
+  { id: 'ETH', name: 'Ethereum', symbol: 'ETH', color: '#4338ca', icon: 'Ξ', explorer: 'https://etherscan.io/address/' },
+  { id: 'SOL', name: 'Solana', symbol: 'SOL', color: '#047857', icon: '◎', explorer: 'https://solscan.io/account/' },
+  { id: 'HL', name: 'Hyperliquid', symbol: 'HYPE', color: '#0f766e', icon: '⚡', explorer: 'https://app.hyperliquid.xyz/explorer/address/' },
+  { id: 'COINBASE', name: 'Coinbase', symbol: 'COIN', color: '#1d4ed8', icon: '🔵', explorer: 'https://coinbase.com' },
 ];
 
 export const INITIAL_MARKET_PRICES = {

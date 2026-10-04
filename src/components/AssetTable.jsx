@@ -35,12 +35,12 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
 
   const getChainBadgeColor = (chain) => {
     switch (chain) {
-      case 'BTC': return { bg: '#F7931A18', text: '#F7931A', border: '#F7931A40' };
-      case 'ETH': return { bg: '#627EEA18', text: '#627EEA', border: '#627EEA40' };
-      case 'SOL': return { bg: '#14F19518', text: '#14F195', border: '#14F19540' };
-      case 'HL': return { bg: '#20E5A318', text: '#20E5A3', border: '#20E5A340' };
-      case 'COINBASE': return { bg: '#0052FF18', text: '#0052FF', border: '#0052FF40' };
-      default: return { bg: '#ffffff10', text: '#ffffff', border: '#ffffff20' };
+      case 'BTC': return { bg: '#fef3c7', text: '#92400e', border: '#d97706' };
+      case 'ETH': return { bg: '#e0e7ff', text: '#3730a3', border: '#6366f1' };
+      case 'SOL': return { bg: '#dcfce7', text: '#166534', border: '#22c55e' };
+      case 'HL': return { bg: '#ccfbf1', text: '#115e59', border: '#14b8a6' };
+      case 'COINBASE': return { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' };
+      default: return { bg: '#f1f5f9', text: '#334155', border: '#cbd5e1' };
     }
   };
 

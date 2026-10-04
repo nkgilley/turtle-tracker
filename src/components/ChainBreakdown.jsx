@@ -6,35 +6,40 @@ export function ChainBreakdown({ chainTotals, totalNetWorth, onSelectChainFilter
     {
       id: 'BTC',
       name: 'Bitcoin',
-      color: '#F7931A',
+      color: '#b45309',
+      barColor: '#f59e0b',
       icon: '₿',
       desc: 'Native BTC + Babylon Staked LST'
     },
     {
       id: 'ETH',
       name: 'Ethereum & ERC-20',
-      color: '#627EEA',
+      color: '#4338ca',
+      barColor: '#6366f1',
       icon: 'Ξ',
       desc: 'ETH, stETH, wstETH, USDC, DeFi'
     },
     {
       id: 'SOL',
       name: 'Solana',
-      color: '#14F195',
+      color: '#047857',
+      barColor: '#10b981',
       icon: '◎',
       desc: 'SOL, JitoSOL MEV, mSOL, SPL tokens'
     },
     {
       id: 'HL',
       name: 'Hyperliquid',
-      color: '#20E5A3',
+      color: '#0f766e',
+      barColor: '#14b8a6',
       icon: '⚡',
       desc: 'HYPE Staking, HLP Vault, Perps Margin'
     },
     {
       id: 'COINBASE',
       name: 'Coinbase',
-      color: '#0052FF',
+      color: '#1d4ed8',
+      barColor: '#3b82f6',
       icon: '🔵',
       desc: 'Coinbase Exchange & Staking Vault'
     }
@@ -61,7 +66,7 @@ export function ChainBreakdown({ chainTotals, totalNetWorth, onSelectChainFilter
               className="segment"
               style={{
                 width: `${Math.max(pct, 2)}%`,
-                backgroundColor: chain.color
+                backgroundColor: chain.barColor || chain.color
               }}
               title={`${chain.name}: ${pct.toFixed(1)}%`}
             />
