@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>turtletrack</Name>
+  <Repository>turtletrack:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project>https://turtletrack.com</Project>
+  <Overview>TurtleTrack - Non-custodial multi-chain portfolio, staking telemetry, and L2 scanner for Bitcoin, Ethereum, Solana, Hyperliquid, and Coinbase.</Overview>
+  <Category>Tools: Productivity: Other:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f422.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <Config Name="WebUI Port" Target="80" Default="8080" Mode="tcp" Description="Host port to access TurtleTrack Web UI" Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+</Container>
