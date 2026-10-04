@@ -182,3 +182,10 @@ crypto-tracker/
 - **100% Non-Custodial / Watch-Only**: TurtleTrack never requests, imports, or stores private keys or seed phrases.
 - **KMS Envelope Encryption**: All user-defined wallet labels and tags are encrypted at rest using AES-256-GCM.
 - **Zero-Knowledge Architecture**: Users can track public ledger addresses without linking personal identities.
+
+---
+
+## 🤖 Built With Gemini & Antigravity
+
+TurtleTrack was architected, designed, and developed through pair-programming with **Google DeepMind's Gemini** and the **Antigravity** agentic coding platform. From initial design systems and multi-chain RPC integrations to Docker containerization and Unraid deployment, Antigravity powered the autonomous end-to-end development workflow.
+
