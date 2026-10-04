@@ -87,9 +87,7 @@ npm run preview
 
 ## 🏛️ Million-User Architecture & Scaling Plan
 
-For a complete breakdown of how TurtleTrack is engineered to scale to **5,000,000+ MAU** and **50,000,000+ tracked wallet addresses**, see the comprehensive design document:
-
-📄 **[Architecture & Scaling Blueprint](file:///Users/nolan/.gemini/antigravity-ide/brain/9b858d34-9b4d-4c5b-985f-31320e407243/architecture_and_scaling_plan.md)**
+For a complete breakdown of how TurtleTrack is engineered to scale across millions of wallet addresses, see the key architectural pillars below:
 
 ### Key Highlights:
 1. **Event-Driven Webhook Ingestion**: Uses Helius Geyser gRPC (Solana), Alchemy Address Activity (Ethereum), and ElectrumX/ZMQ (Bitcoin) instead of high-cost REST polling, reducing RPC expenses by **92%**.

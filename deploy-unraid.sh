@@ -6,14 +6,21 @@
 
 set -euo pipefail
 
-# Configuration (defaults can be overridden via environment variables)
-UNRAID_HOST="${UNRAID_HOST:-root@192.168.86.113}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Load optional local deployment config if present (.gitignore protected)
+if [ -f "${SCRIPT_DIR}/.env.deploy" ]; then
+  # shellcheck source=/dev/null
+  source "${SCRIPT_DIR}/.env.deploy"
+fi
+
+# Configuration (defaults can be overridden via environment variables or .env.deploy)
+UNRAID_HOST="${UNRAID_HOST:-root@tower.local}"
 UNRAID_IP=$(echo "${UNRAID_HOST}" | cut -d'@' -f2)
 APP_NAME="${APP_NAME:-turtletrack}"
 PORT="${PORT:-8550}"
 REMOTE_APPDATA="/mnt/user/appdata/${APP_NAME}"
 REMOTE_TEMPLATE="/boot/config/plugins/dockerMan/templates-user/my-${APP_NAME}.xml"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ANSI Color codes for clean output
 GREEN='\033[0;32m'
