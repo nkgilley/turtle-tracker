@@ -24,13 +24,10 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
           </div>
         </div>
 
-        {/* Live Network & Node Status Pills */}
+        {/* Live Sync Status Pill */}
         <div className="network-pills">
-          <div className="pill-item">
-            <span className="pulse-dot green"></span>
-            <span className="pill-text">BTC &middot; ETH &middot; SOL &middot; HL</span>
-          </div>
           <div className="pill-item hide-mobile">
+            <span className="pulse-dot green"></span>
             <span className="pill-muted">Sync:</span>
             <span className="pill-value">Real-Time</span>
           </div>

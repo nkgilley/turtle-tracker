@@ -15,7 +15,10 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
 
   // Count small balance assets (< $1.00)
   const smallBalancesCount = React.useMemo(() => {
-    return assets.filter(item => Math.abs(item.totalValue) < 1.00).length;
+    return assets.filter(item => {
+      const val = typeof item.value === 'number' ? item.value : (typeof item.totalValue === 'number' ? item.totalValue : 0);
+      return Math.abs(val) < 1.00;
+    }).length;
   }, [assets]);
 
   // Filter assets
@@ -51,8 +54,11 @@ export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {
       return false;
     }
     // Hide small balances filter (< $1.00)
-    if (hideSmallBalances && Math.abs(item.totalValue) < 1.00) {
-      return false;
+    if (hideSmallBalances) {
+      const val = typeof item.value === 'number' ? item.value : (typeof item.totalValue === 'number' ? item.totalValue : 0);
+      if (Math.abs(val) < 1.00) {
+        return false;
+      }
     }
     // Search query
     if (searchTerm.trim() !== '') {
