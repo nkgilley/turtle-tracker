@@ -437,7 +437,7 @@ function TrackerMain() {
           <div className="footer-left">
             <div className="footer-logo">
               <TurtleLogo size={22} />
-              <span>TURTLETRACK.COM</span>
+              <span>TURTLETRACK</span>
             </div>
             <p className="footer-desc">
               Slow, steady, sovereign wealth. Non-custodial multi-chain portfolio and staking telemetry for Bitcoin, Ethereum, Solana, Hyperliquid, and Coinbase.
@@ -448,7 +448,7 @@ function TrackerMain() {
               <span className="pulse-dot green"></span>
               <span>All Reef Indexers Nominal</span>
             </div>
-            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack.com</span>
+            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack</span>
           </div>
         </div>
       </footer>

@@ -8,7 +8,7 @@
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
   <Support/>
-  <Project>https://turtletrack.com</Project>
+  <Project>https://github.com/nkgilley/turtle-tracker</Project>
   <Overview>TurtleTrack - Non-custodial multi-chain portfolio, staking telemetry, and L2 scanner for Bitcoin, Ethereum, Solana, Hyperliquid, and Coinbase.</Overview>
   <Category>Tools: Productivity: Other:</Category>
   <WebUI>http://[IP]:[PORT:8550]/</WebUI>
