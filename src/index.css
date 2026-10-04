@@ -221,8 +221,8 @@ body {
 .brand-title {
   font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: -0.02em;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
   color: var(--text-main);
   background: none;
   -webkit-text-fill-color: initial;

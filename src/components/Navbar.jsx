@@ -16,11 +16,7 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
             <TurtleLogo size={28} />
           </div>
           <div className="brand-text">
-            <div className="brand-title-row">
-              <span className="brand-title">TURTLETRACK</span>
-              <span className="brand-domain-pill">.COM</span>
-            </div>
-            <span className="brand-tag">SOVEREIGN WEALTH &bull; REEF TELEMETRY</span>
+            <span className="brand-title">TURTLETRACK</span>
           </div>
         </div>
 
