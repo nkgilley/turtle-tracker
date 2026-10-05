@@ -1,195 +1,153 @@
-# TurtleTrack | Multi-Chain Portfolio & Staking Telemetry
+# 🐢 TurtleTrack
 
-> **Slow, steady, non-custodial cross-chain portfolio and staking intelligence platform.**
+> **Slow, steady, sovereign wealth telemetry. Non-custodial cross-chain portfolio and staking tracker.**
 
 <p align="center">
   <img src="docs/demo-dashboard.png" alt="TurtleTrack Multi-Chain Portfolio & Staking Telemetry Dashboard" width="100%" />
 </p>
 
-TurtleTrack allows users to create an account, connect and label multiple wallet addresses across diverse blockchain ecosystems, and track liquid assets alongside active staking positions, rebase rewards, and vault yields.
+<p align="center">
+  <a href="https://hub.docker.com/r/nkgilley/turtletrack"><img src="https://img.shields.io/docker/pulls/nkgilley/turtletrack?style=flat-square&logo=docker&label=Docker%20Hub" alt="Docker Pulls" /></a>
+  <a href="https://github.com/nkgilley/turtle-tracker"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%3E%3D22.0.0-339933?style=flat-square&logo=node.js" alt="Node" /></a>
+  <img src="https://img.shields.io/badge/platform-linux%2Famd64%20%7C%20linux%2Farm64-blue?style=flat-square" alt="Multi-Arch" />
+  <img src="https://img.shields.io/badge/unraid-ready-orange?style=flat-square" alt="Unraid" />
+</p>
 
 ---
 
-## ⚡ Supported Chains, Exchanges & Staking Protocols
+## ⚡ Overview
 
-| Ecosystem / Platform | Tracked Assets | Staking Protocols & Yield Mechanisms |
+**TurtleTrack** is a lightweight, self-hosted crypto portfolio intelligence dashboard. It connects watch-only addresses across multiple blockchains and exchanges, tracking liquid balances alongside native staking, liquid staking tokens, validator yields, and exchange balances.
+
+- **Zero Cloud Lock-in**: Fully self-hosted with persistent server-side SQLite storage.
+- **Cross-Device Sync**: Sign in with an email or Web3 wallet (MetaMask, Rabby, Phantom) to access your saved portfolios from any phone, desktop, or tablet.
+- **Clean by Default**: Unauthenticated visitors are greeted with a secure sign-in gateway. New users start fresh at **$0.00** with zero mock data clutter.
+- **Non-Custodial & Watch-Only**: Never touches private keys or seed phrases for blockchain addresses. Exchange credentials are stored securely in your own private database.
+
+---
+
+## 🌐 Supported Ecosystems
+
+| Ecosystem | Tracked Assets | Staking & Yield Integrations |
 | :--- | :--- | :--- |
-| **Bitcoin (BTC)** | Native BTC (Legacy, SegWit, Taproot) | **Babylon Protocol**, Lombard Finance (`LBTC`), Core Chain LSTs |
-| **Ethereum (ETH)** | ETH, ERC-20s (USDC, USDT, UNI, LINK, PEPE, etc.) | **Native Beacon Validator**, **Lido DAO** (`stETH`), **EigenLayer Restaking** (`wstETH`) |
-| **Solana (SOL)** | Native SOL, SPL Tokens (USDC, BONK, etc.) | **Jito MEV Stake** (`JitoSOL`), **Marinade Finance** (`mSOL`), Native Stake Accounts |
-| **Hyperliquid (HL)** | HYPE Spot, Perps Margin Collateral | **HYPE Native Staking** (~2.18% APY), **stHYPE Liquid Staking** (~2.11% APY), **HLP Liquidity Vault** (~20.4% APY) |
-| **Coinbase (Exchange)**| Spot BTC, ETH, SOL, USDC | **Coinbase Staked ETH (`cbETH`)**, **Coinbase Staked SOL**, **USDC Rewards (4.85% APY)** |
+| **Bitcoin (BTC)** | Native BTC (Legacy, SegWit, Taproot) | Babylon Protocol, Lombard (`LBTC`), Core Chain LSTs |
+| **Ethereum (ETH)** | ETH & ERC-20s across Mainnet & L2s | Native Beacon Validator, Lido (`stETH`), EigenLayer Restaking |
+| **Solana (SOL)** | Native SOL & SPL Tokens | Jito MEV Stake (`JitoSOL`), Marinade (`mSOL`), Native Stake |
+| **Hyperliquid (HL)** | HYPE Spot & Perps Collateral | HYPE Native Staking (~2.18% APY), stHYPE Liquid Staking (~2.11% APY), HLP Liquidity Pool (~20.4% APY) |
+| **Coinbase** | Spot balances via official CDP API | cbETH Staking, cbSOL Staking, USDC Rewards |
 
 ---
 
-## ✨ Features
+## 🚀 Quick Start with Docker
 
-- **Clean Account Onboarding & Profiles**:
-  - **Zero Demo Pollution**: Every new account starts completely clean with a **$0.00 balance** and zero demo wallets.
-  - Sign Up, Sign In, and optional 1-Click "Preview Demo Portfolio" mode.
-  - Separate per-user storage isolation.
-- **Multi-Chain Wallet Management**:
-  - Add addresses with real-time format validation for Bitcoin (Bech32/Taproot/P2SH), Ethereum (`0x...`), Solana (Base58), and Hyperliquid.
-  - Smart auto-detection of chain from address format.
-  - Quick autofill demo buttons to instantly test multi-chain portfolios.
-  - 1-click clipboard copy, explorer links (Mempool.space, Etherscan, Solscan, Hyperliquid Explorer), and wallet deletion.
-- **Dynamic Portfolio Analytics**:
-  - Total Net Worth calculation across all connected wallets.
-  - 24-hour PnL ($ and %) with live price tick micro-updates.
-  - Blended Staking APY and estimated annual/monthly passive income projections.
-  - Interactive SVG spline chart with hover crosshair and timeframe switching (`24H`, `7D`, `30D`, `1Y`, `ALL`).
-  - Multi-chain allocation bar and interactive network breakdown cards.
-- **Dedicated Staking Hub**:
-  - In-depth protocol breakdown for Babylon BTC, Lido/EigenLayer ETH, Jito MEV SOL, and Hyperliquid HYPE/HLP.
-  - Active staking positions table with accrued reward counters and protocol badges.
-  - Interactive compounding yield forecast calculator (1 to 5 years).
-- **On-Chain Activity Feed**:
-  - Live ledger event stream showing incoming transfers, staking rebase rewards, and vault yield distributions.
-- **Luxury Fintech UI / UX**:
-  - Deep cosmic obsidian dark mode with glowing cyan, violet, and emerald accents.
-  - Smooth glassmorphism surfaces (`backdrop-filter: blur(16px)`).
-  - Fully responsive across desktop, tablet, and mobile devices.
+Multi-architecture images (`linux/amd64` and `linux/arm64`) are published to Docker Hub at [`nkgilley/turtletrack`](https://hub.docker.com/r/nkgilley/turtletrack).
 
----
+### Standalone Docker
 
-## 🐳 Docker Deployment
-
-TurtleTrack is containerized and available on Docker Hub as [`nkgilley/turtletrack`](https://hub.docker.com/r/nkgilley/turtletrack).
-
-### Quick Run (with Persistent SQLite Storage)
 ```bash
 docker run -d \
   --name turtletrack \
+  --restart unless-stopped \
   -p 8550:80 \
   -v turtletrack-data:/app/data \
-  --restart unless-stopped \
   nkgilley/turtletrack:latest
 ```
 
-### Run with Custom Coinbase CDP & Solana RPC (Optional)
-```bash
-docker run -d \
-  --name turtletrack \
-  -p 8550:80 \
-  -v /mnt/user/appdata/turtletrack/data:/app/data \
-  -e COINBASE_API_KEY_NAME="organizations/.../apiKeys/..." \
-  -e COINBASE_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----" \
-  -e SOLANA_RPC_URL="https://api.mainnet-beta.solana.com" \
-  --restart unless-stopped \
-  nkgilley/turtletrack:latest
-```
+Open **`http://localhost:8550`** in your browser.
 
 ### Docker Compose
+
 ```yaml
 services:
   turtletrack:
     image: nkgilley/turtletrack:latest
     container_name: turtletrack
+    restart: unless-stopped
     ports:
       - "8550:80"
-    environment:
-      - PORT=80
     volumes:
       - ./data:/app/data
-    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
 ```
 
 ---
 
-## 🚀 Running Locally
+## 🏠 Unraid Home Server Deployment
 
-The app is powered by **Vite** and **React**.
+TurtleTrack includes full automation and GUI template support for Unraid home servers:
 
-### 1. Prerequisites
-- **Node.js**: v18.0.0 or later (tested on Node v24)
-- **npm**: v9.0.0 or later
+1. **Automated One-Click Script**:
+   ```bash
+   chmod +x deploy-unraid.sh
+   ./deploy-unraid.sh
+   ```
+   *Connects via SSH to your Unraid host, installs the Docker GUI template to `/boot/config/plugins/dockerMan/templates-user/my-turtletrack.xml`, creates persistent appdata at `/mnt/user/appdata/turtletrack/data`, pulls the latest Docker image, and starts the container.*
 
-### 2. Installation
-Clone the repository and install dependencies:
+2. **WebGUI Access**:
+   Once deployed, access the dashboard at **`http://tower.local:8550`** (or your server's local IP) or manage it directly from the Unraid **Docker** tab.
+
+---
+
+## 💻 Local Development
+
+Built with **React**, **Vite**, and **Node.js** (utilizing native Node 22 `node:sqlite`).
+
 ```bash
+# 1. Clone repository
+git clone https://github.com/nkgilley/turtle-tracker.git
+cd turtle-tracker
+
+# 2. Install dependencies
 npm install
-```
 
-### 3. Launch Development Server
-Start the local development server:
-```bash
+# 3. Start local fullstack server (Frontend + SQLite API)
 npm run dev
 ```
 
-Open your browser and navigate to:
-```
-http://localhost:5173/
-```
+Visit `http://localhost:5173`. Any changes to `src/` or `server.js` hot-reload instantly.
 
-### 4. Build for Production
-To create an optimized production build:
 ```bash
+# Build production bundle
 npm run build
-```
-Preview the production build locally:
-```bash
-npm run preview
+
+# Start production server
+npm start
 ```
 
 ---
 
-## 🏛️ Million-User Architecture & Scaling Plan
+## 🗄️ How the Database Works
 
-For a complete breakdown of how TurtleTrack is engineered to scale across millions of wallet addresses, see the key architectural pillars below:
+TurtleTrack uses Node 22's native **`node:sqlite`** engine with zero external native npm dependencies:
 
-### Key Highlights:
-1. **Event-Driven Webhook Ingestion**: Uses Helius Geyser gRPC (Solana), Alchemy Address Activity (Ethereum), and ElectrumX/ZMQ (Bitcoin) instead of high-cost REST polling, reducing RPC expenses by **92%**.
-2. **$O(1)$ Constant-Time Rebase Handling**: Rebase tokens (such as Lido `stETH`) are stored as immutable user **shares** multiplied by a cached global singleton in Redis, eliminating the need to update tens of millions of records on every daily rebase.
-3. **Multi-Tier Storage Hierarchy**:
-   - **Redis 7.x Cluster**: Sub-5ms balance snapshots and global market price matrix.
-   - **Sharded PostgreSQL (Citus)**: 16 horizontal database shards partitioned by `user_id` and `wallet_hash`.
-   - **ClickHouse (OLAP)**: High-throughput time-series analytics for historical net worth curves and performance reporting.
-4. **Estimated Monthly Run-Rate**: Evaluated at **~$29,200/month** for 5M active users (~$0.0058/user/mo).
-
----
-
-## 🛠️ Project Structure
-
-```
-crypto-tracker/
-├── index.html                   # HTML entry point with fonts & metadata
-├── package.json                 # Project dependencies & scripts
-├── vite.config.js               # Vite configuration
-├── README.md                    # Project documentation
-└── src/
-    ├── main.jsx                 # React root mount
-    ├── App.jsx                  # Main application orchestrator
-    ├── index.css                # Custom dark fintech design system
-    ├── components/
-    │   ├── TurtleLogo.jsx       # Glowing vector turtle mascot & carapace logo
-    │   ├── Navbar.jsx           # Top navigation, network status & user menu
-    │   ├── PortfolioSummary.jsx # Net worth, 24h PnL & staking metrics
-    │   ├── PortfolioChart.jsx   # Interactive SVG spline chart
-    │   ├── ChainBreakdown.jsx   # Network allocation bar & cards
-    │   ├── AssetTable.jsx       # Filterable & searchable token holdings
-    │   ├── StakingHub.jsx       # Dedicated staking hub & yield calculator
-    │   ├── ActivityLog.jsx      # On-chain transaction & rebase feed
-    │   ├── WalletManagerModal.jsx # Address validator & management modal
-    │   └── AuthModal.jsx        # Sign in, sign up & demo user modal
-    ├── context/
-    │   └── AuthContext.jsx      # Auth state & user profile provider
-    ├── data/
-    │   └── mockData.js          # Multi-chain seed data & prices
-    └── services/
-        └── cryptoService.js     # Address validation & portfolio math
-```
+- **Database Location**: Stored in `data/turtletrack.db` (mapped via `/app/data` volume in Docker).
+- **WAL Mode**: Write-Ahead Logging (`PRAGMA journal_mode = WAL;`) for high concurrency and zero database locks.
+- **Stored Data**:
+  - `users`: ID, email/wallet identifier, hashed credentials (PBKDF2-SHA512 + unique per-user salt).
+  - `sessions`: High-entropy 256-bit bearer tokens with automated expiration.
+  - `wallets`: User ID, chain identifier, public watch address, custom label, cached assets, and encrypted connection metadata.
+- **Safety Guards**: Includes server-side hydration guards to prevent accidental empty wallet synchronization or data loss across devices.
 
 ---
 
 ## 🔒 Security & Privacy
 
-- **100% Non-Custodial / Watch-Only**: TurtleTrack never requests, imports, or stores private keys or seed phrases.
-- **KMS Envelope Encryption**: All user-defined wallet labels and tags are encrypted at rest using AES-256-GCM.
-- **Zero-Knowledge Architecture**: Users can track public ledger addresses without linking personal identities.
+- **100% Watch-Only**: Never asks for or stores private keys or seed phrases for crypto wallets.
+- **Zero Third-Party Tracking**: No telemetry, Google Analytics, or third-party user tracking scripts.
+- **Air-Gapped Vault Option**: Runs entirely on your local LAN / home server behind your firewall.
 
 ---
 
 ## 🤖 Built With Gemini & Antigravity
 
-TurtleTrack was architected, designed, and developed through pair-programming with **Google DeepMind's Gemini** and the **Antigravity** agentic coding platform. From initial design systems and multi-chain RPC integrations to Docker containerization and Unraid deployment, Antigravity powered the autonomous end-to-end development workflow.
+TurtleTrack was architected, coded, and deployed through pair-programming with **Google DeepMind's Gemini** and the **Antigravity** agentic coding platform. From custom multi-chain RPC parsers to Docker containerization and Unraid automation, Antigravity powered the autonomous end-to-end development workflow.
 
+---
+
+## 📄 License
+
+Distributed under the [MIT License](LICENSE).
