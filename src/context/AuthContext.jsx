@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-const AuthContext = createContext();
+import React, { useState, useEffect, useCallback } from 'react';
+import { AuthContext } from './authContextBase';
 
 const STORAGE_USER_KEY = 'turtletrack_crypto_user';
 const STORAGE_TOKEN_KEY = 'turtletrack_auth_token';
@@ -41,7 +40,13 @@ export function AuthProvider({ children }) {
   });
 
   const [serverWallets, setServerWallets] = useState(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(() => {
+    try {
+      return !!localStorage.getItem(STORAGE_TOKEN_KEY);
+    } catch {
+      return false;
+    }
+  });
 
   // Sync session state to localStorage
   useEffect(() => {
@@ -70,10 +75,11 @@ export function AuthProvider({ children }) {
 
   // On mount, validate token and restore session + server wallets across devices
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
     let isMounted = true;
-    setIsAuthLoading(true);
 
     fetch('/api/auth/me', {
       headers: {
@@ -128,7 +134,7 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       if (data.wallets) setServerWallets(data.wallets);
       return { success: true, user: data.user, wallets: data.wallets };
-    } catch (err) {
+    } catch {
       // Local fallback if offline
       const newUser = {
         id: `usr-${Date.now()}`,
@@ -159,7 +165,7 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       setServerWallets([]);
       return { success: true, user: data.user, wallets: [] };
-    } catch (err) {
+    } catch {
       // Local fallback if offline
       const newUser = {
         id: `usr-${Date.now()}`,
@@ -190,7 +196,7 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       if (data.wallets) setServerWallets(data.wallets);
       return { success: true, user: data.user, wallets: data.wallets };
-    } catch (err) {
+    } catch {
       // Local fallback if server unreachable
       const isEth = chain.toUpperCase() === 'ETH';
       const shortAddr = address.length > 10 
@@ -274,6 +280,3 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}

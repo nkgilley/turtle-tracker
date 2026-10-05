@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Flame, Zap, DollarSign, Calculator, Lock, ArrowUpRight } from 'lucide-react';
+import { ShieldCheck, DollarSign, Calculator, Lock, Coins } from 'lucide-react';
 
 export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYield, averageStakingApy }) {
   const [calculatorStake, setCalculatorStake] = useState(totalStakedValue || 50000);
@@ -8,8 +8,6 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
   // Compound interest calculation
   const calculatedFutureValue = calculatorStake * Math.pow(1 + (averageStakingApy / 100), calcYears);
   const totalEarnedYield = calculatedFutureValue - calculatorStake;
-
-
 
   return (
     <div className="staking-hub-container">
@@ -46,8 +44,6 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
         </div>
       </div>
 
-
-
       {/* Staking Positions Table */}
       <div className="staking-table-card">
         <div className="table-card-header">
@@ -73,50 +69,60 @@ export function StakingHub({ stakingPositions, totalStakedValue, totalAnnualYiel
               </tr>
             </thead>
             <tbody>
-              {stakingPositions.map((pos, idx) => (
-                <tr key={idx} className="asset-row">
-                  <td>
-                    <div className="token-cell">
-                      <div className="token-avatar purple-avatar">
-                        {pos.symbol.substring(0, 3)}
-                      </div>
-                      <div className="token-info">
-                        <span className="token-symbol">{pos.symbol}</span>
-                        <span className="token-full-name">{pos.chain} Ecosystem</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="protocol-badge">
-                      <Lock size={12} />
-                      <span>{pos.protocol}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="wallet-cell">
-                      <span className="wallet-label-text">{pos.walletLabel}</span>
-                      <span className="wallet-address-short">
-                        {pos.walletAddress.substring(0, 6)}...{pos.walletAddress.substring(pos.walletAddress.length - 4)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="align-right font-mono">
-                    {pos.balance.toLocaleString('en-US', { maximumFractionDigits: 4 })} {pos.symbol}
-                  </td>
-                  <td className="align-right font-mono font-bold">
-                    ${pos.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td className="align-right">
-                    <span className="apy-tag green">{pos.apy.toFixed(2)}%</span>
-                  </td>
-                  <td className="align-right font-mono green-text">
-                    +{pos.rewardsEarned.toLocaleString('en-US', { maximumFractionDigits: 4 })} {pos.symbol}
-                  </td>
-                  <td className="align-right font-mono cyan-text font-bold">
-                    +${pos.annualYieldValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/yr
+              {stakingPositions.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="empty-table-state">
+                    <Coins size={36} className="empty-icon" />
+                    <p>No active staking positions detected yet.</p>
+                    <span>Connect a wallet with staked assets (e.g. stETH, JitoSOL, Babylon BTC, or HYPE) to view live validator yields.</span>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                stakingPositions.map((pos, idx) => (
+                  <tr key={idx} className="asset-row">
+                    <td>
+                      <div className="token-cell">
+                        <div className="token-avatar purple-avatar">
+                          {pos.symbol.substring(0, 3)}
+                        </div>
+                        <div className="token-info">
+                          <span className="token-symbol">{pos.symbol}</span>
+                          <span className="token-full-name">{pos.chain} Ecosystem</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="protocol-badge">
+                        <Lock size={12} />
+                        <span>{pos.protocol}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="wallet-cell">
+                        <span className="wallet-label-text">{pos.walletLabel}</span>
+                        <span className="wallet-address-short">
+                          {pos.walletAddress.substring(0, 6)}...{pos.walletAddress.substring(pos.walletAddress.length - 4)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="align-right font-mono">
+                      {pos.balance.toLocaleString('en-US', { maximumFractionDigits: 4 })} {pos.symbol}
+                    </td>
+                    <td className="align-right font-mono font-bold">
+                      ${pos.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className="align-right">
+                      <span className="apy-tag green">{pos.apy.toFixed(2)}%</span>
+                    </td>
+                    <td className="align-right font-mono green-text">
+                      +{pos.rewardsEarned.toLocaleString('en-US', { maximumFractionDigits: 4 })} {pos.symbol}
+                    </td>
+                    <td className="align-right font-mono cyan-text font-bold">
+                      +${pos.annualYieldValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/yr
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

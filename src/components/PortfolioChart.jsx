@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { generateChartPoints } from '../services/cryptoService';
-import { TrendingUp, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export function PortfolioChart({ totalNetWorth }) {
   const [timeframe, setTimeframe] = useState('7D');
@@ -10,8 +10,8 @@ export function PortfolioChart({ totalNetWorth }) {
     return generateChartPoints(totalNetWorth, timeframe);
   }, [totalNetWorth, timeframe]);
 
-  const { minVal, maxVal, svgPath, areaPath, coords } = useMemo(() => {
-    if (!points || points.length === 0) return { minVal: 0, maxVal: 0, svgPath: '', areaPath: '', coords: [] };
+  const { svgPath, areaPath, coords } = useMemo(() => {
+    if (!points || points.length === 0) return { svgPath: '', areaPath: '', coords: [] };
 
     const values = points.map(p => p.value);
     const min = Math.min(...values) * 0.985;
@@ -28,7 +28,9 @@ export function PortfolioChart({ totalNetWorth }) {
 
     const calculatedCoords = points.map((p, idx) => {
       const x = paddingX + (idx / (points.length - 1)) * usableWidth;
-      const y = paddingTop + usableHeight - ((p.value - min) / range) * usableHeight;
+      const y = totalNetWorth <= 0 
+        ? paddingTop + usableHeight 
+        : paddingTop + usableHeight - ((p.value - min) / range) * usableHeight;
       return { x, y, ...p };
     });
 
@@ -53,13 +55,11 @@ export function PortfolioChart({ totalNetWorth }) {
     const area = `${d} L ${lastPoint.x} ${height - paddingBottom} L ${firstPoint.x} ${height - paddingBottom} Z`;
 
     return {
-      minVal: min,
-      maxVal: max,
       svgPath: d,
       areaPath: area,
       coords: calculatedCoords
     };
-  }, [points]);
+  }, [points, totalNetWorth]);
 
   const activeDisplay = hoveredPoint || (coords.length > 0 ? coords[coords.length - 1] : null);
 

@@ -504,8 +504,6 @@ async function fetchSolanaOnChain(address) {
     'https://rpc.ankr.com/solana'
   ];
 
-  let batchSuccess = false;
-
   for (const endpoint of rpcEndpoints) {
     try {
       const res = await fetch(endpoint, {
@@ -658,7 +656,7 @@ async function fetchEthereumOnChain(address) {
           }
         }
       }
-    } catch (e) {
+    } catch {
       // Fall through to RPC fallback
     }
 
@@ -678,7 +676,7 @@ async function fetchEthereumOnChain(address) {
         if (rpcData.result) {
           nativeBal = parseInt(rpcData.result, 16) / 1e18;
         }
-      } catch (rpcErr) {
+      } catch {
         // Continue
       }
     }
@@ -726,7 +724,7 @@ async function fetchEthereumOnChain(address) {
             });
           });
         }
-      } catch (tokenErr) {
+      } catch {
         // Continue
       }
     }
@@ -965,7 +963,19 @@ export function calculatePortfolioMetrics(wallets, marketPrices) {
 
 export function generateChartPoints(totalNetWorth, timeframe = '7D') {
   const points = [];
-  const base = totalNetWorth || 100000;
+  if (!totalNetWorth || totalNetWorth <= 0) {
+    const count = timeframe === '24H' ? 24 : timeframe === '7D' ? 28 : timeframe === '30D' ? 30 : 36;
+    for (let i = 0; i < count; i++) {
+      points.push({
+        time: `${i}:00`,
+        value: 0,
+        pctChange: 0
+      });
+    }
+    return points;
+  }
+
+  const base = totalNetWorth;
   let count = 24;
   let volatility = 0.015;
   let trend = 0.035;

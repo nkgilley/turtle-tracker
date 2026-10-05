@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Mail, Sparkles, CheckCircle2, Shield, Wallet, ArrowRight, Check } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { X, User, Lock, Mail, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
 import { TurtleLogo } from './TurtleLogo';
 
 export function AuthModal({ isOpen, onClose }) {

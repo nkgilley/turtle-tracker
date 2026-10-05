@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, ShieldCheck, ExternalLink, ArrowUpRight, ArrowDownRight, Coins, Lock } from 'lucide-react';
+import { Search, ShieldCheck, ExternalLink, Coins, Lock } from 'lucide-react';
 import { SUPPORTED_CHAINS } from '../data/mockData';
 
 export function AssetTable({ assets, activeChainFilter, onSelectChainFilter }) {

@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { Wallet, Plus, RefreshCw, User, LogOut, CheckCircle2, Shield, Sparkles } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { Wallet, Plus, RefreshCw, User, LogOut, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
 import { TurtleLogo } from './TurtleLogo';
 
 export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRefresh, isRefreshing }) {
   const { user, isAuthenticated, logout, switchToDemo } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!showUserMenu) return;
+    const handleOutsideClick = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showUserMenu]);
 
   return (
     <header className="navbar">
@@ -58,7 +71,7 @@ export function Navbar({ walletsCount, onOpenWalletModal, onOpenAuthModal, onRef
           </button>
 
           {/* User Profile / Auth Button */}
-          <div className="user-menu-container">
+          <div className="user-menu-container" ref={userMenuRef}>
             {isAuthenticated ? (
               <div className="user-profile-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
                 <div 

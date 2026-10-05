@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PieChart as PieChartIcon, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { PieChart as PieChartIcon, RotateCcw, Check } from 'lucide-react';
 import { getNetworkInfo } from '../data/mockData';
 
 export function ChainBreakdown({ 
@@ -50,52 +50,54 @@ export function ChainBreakdown({
       return { slices: [], activeSlice: null };
     }
 
+    const calculatedSlices = [];
     let curAngle = -90; // Start at 12 o'clock
-    const calculatedSlices = activeNetworks
-      .filter(c => c.percentage > 0.0001)
-      .map(c => {
-        // Normalize angle so all slices sum to 360
-        const angle = (c.percentage / totalPct) * 360;
-        const startAngle = curAngle;
-        const endAngle = curAngle + angle;
-        curAngle += angle;
 
-        const isFull = angle >= 359.95;
-        let path = '';
+    for (const c of activeNetworks) {
+      if (c.percentage <= 0.0001) continue;
 
-        if (isFull) {
-          path = `M ${cx - R} ${cy} A ${R} ${R} 0 1 0 ${cx + R} ${cy} A ${R} ${R} 0 1 0 ${cx - R} ${cy} M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy} A ${r} ${r} 0 1 1 ${cx - r} ${cy} Z`;
-        } else {
-          const startRad = (startAngle * Math.PI) / 180;
-          const endRad = (endAngle * Math.PI) / 180;
-          const x1 = cx + R * Math.cos(startRad);
-          const y1 = cy + R * Math.sin(startRad);
-          const x2 = cx + R * Math.cos(endRad);
-          const y2 = cy + R * Math.sin(endRad);
-          const x3 = cx + r * Math.cos(endRad);
-          const y3 = cy + r * Math.sin(endRad);
-          const x4 = cx + r * Math.cos(startRad);
-          const y4 = cy + r * Math.sin(startRad);
-          const largeArc = angle > 180 ? 1 : 0;
+      // Normalize angle so all slices sum to 360
+      const angle = (c.percentage / totalPct) * 360;
+      const startAngle = curAngle;
+      const endAngle = curAngle + angle;
+      curAngle += angle;
 
-          path = `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${r} ${r} 0 ${largeArc} 0 ${x4} ${y4} Z`;
-        }
+      const isFull = angle >= 359.95;
+      let path = '';
 
-        const midAngleRad = (((startAngle + endAngle) / 2) * Math.PI) / 180;
-        const offsetDist = 5;
-        const offsetX = Math.cos(midAngleRad) * offsetDist;
-        const offsetY = Math.sin(midAngleRad) * offsetDist;
+      if (isFull) {
+        path = `M ${cx - R} ${cy} A ${R} ${R} 0 1 0 ${cx + R} ${cy} A ${R} ${R} 0 1 0 ${cx - R} ${cy} M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy} A ${r} ${r} 0 1 1 ${cx - r} ${cy} Z`;
+      } else {
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+        const x1 = cx + R * Math.cos(startRad);
+        const y1 = cy + R * Math.sin(startRad);
+        const x2 = cx + R * Math.cos(endRad);
+        const y2 = cy + R * Math.sin(endRad);
+        const x3 = cx + r * Math.cos(endRad);
+        const y3 = cy + r * Math.sin(endRad);
+        const x4 = cx + r * Math.cos(startRad);
+        const y4 = cy + r * Math.sin(startRad);
+        const largeArc = angle > 180 ? 1 : 0;
 
-        return {
-          ...c,
-          startAngle,
-          endAngle,
-          angle,
-          path,
-          offsetX,
-          offsetY
-        };
+        path = `M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${r} ${r} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+      }
+
+      const midAngleRad = (((startAngle + endAngle) / 2) * Math.PI) / 180;
+      const offsetDist = 5;
+      const offsetX = Math.cos(midAngleRad) * offsetDist;
+      const offsetY = Math.sin(midAngleRad) * offsetDist;
+
+      calculatedSlices.push({
+        ...c,
+        startAngle,
+        endAngle,
+        angle,
+        path,
+        offsetX,
+        offsetY
       });
+    }
 
     const activeId = hoveredNetId || (selectedChainFilter !== 'ALL' ? selectedChainFilter : null);
     const active = calculatedSlices.find(s => s.id === activeId || s.name === activeId) || null;

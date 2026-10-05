@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import { Navbar } from './components/Navbar';
 import { PortfolioSummary } from './components/PortfolioSummary';
 import { PortfolioChart } from './components/PortfolioChart';
@@ -12,8 +13,10 @@ import { AuthModal } from './components/AuthModal';
 import { TurtleLogo } from './components/TurtleLogo';
 import { INITIAL_MARKET_PRICES, INITIAL_DEMO_WALLETS, INITIAL_TRANSACTIONS } from './data/mockData';
 import { calculatePortfolioMetrics, fetchLiveMarketPrices, fetchLiveWalletAssets } from './services/cryptoService';
-import { Shield, Sparkles, Layers, Zap, Plus, ArrowUpRight, Wallet, Lock, User } from 'lucide-react';
+import { Shield, Sparkles, Layers, Zap, Plus, Wallet, Lock, User } from 'lucide-react';
 import './index.css';
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 function TrackerMain() {
   const { user, switchToDemo, serverWallets, syncWalletsToServer } = useAuth();
@@ -145,38 +148,52 @@ function TrackerMain() {
   const lastSyncedSignatureRef = useRef('');
 
   // Helper to generate signature of wallets to detect meaningful mutations
-  const getWalletsSignature = (list) => {
+  // Helper to generate signature of wallets to detect meaningful mutations
+  const getWalletsSignature = useCallback((list) => {
     if (!Array.isArray(list)) return '';
     return list.map(w => `${w.id || ''}:${w.chain || ''}:${w.address || ''}:${w.label || ''}:${w.assets?.length || 0}:${w.privateKey ? 'pk' : ''}`).join('|');
-  };
+  }, []);
 
   // Sync wallets from server SQLite backend or demo/cached state
   useEffect(() => {
     if (!user) {
-      setWallets([]);
+      if (wallets.length > 0) {
+        queueMicrotask(() => {
+          setWallets([]);
+        });
+      }
       hydratedUserIdRef.current = null;
       lastSyncedSignatureRef.current = '';
       return;
     }
 
     if (user.isDemo) {
-      setWallets(INITIAL_DEMO_WALLETS);
-      hydratedUserIdRef.current = 'demo';
-      lastSyncedSignatureRef.current = '';
+      if (hydratedUserIdRef.current !== 'demo') {
+        queueMicrotask(() => {
+          setWallets(INITIAL_DEMO_WALLETS);
+        });
+        hydratedUserIdRef.current = 'demo';
+        lastSyncedSignatureRef.current = '';
+      }
       return;
     }
 
     // Authenticated user with server wallets received from SQLite
     if (serverWallets && Array.isArray(serverWallets)) {
       const sanitized = sanitizeWalletList(serverWallets);
-      setWallets(sanitized);
-      hydratedUserIdRef.current = user.id;
-      lastSyncedSignatureRef.current = getWalletsSignature(sanitized);
+      const sig = getWalletsSignature(sanitized);
+      if (hydratedUserIdRef.current !== user.id || lastSyncedSignatureRef.current !== sig) {
+        queueMicrotask(() => {
+          setWallets(sanitized);
+        });
+        hydratedUserIdRef.current = user.id;
+        lastSyncedSignatureRef.current = sig;
 
-      const key = getWalletStorageKey(user);
-      try {
-        localStorage.setItem(key, JSON.stringify(sanitized));
-      } catch {}
+        const key = getWalletStorageKey(user);
+        try {
+          localStorage.setItem(key, JSON.stringify(sanitized));
+        } catch {}
+      }
       return;
     }
 
@@ -187,16 +204,25 @@ function TrackerMain() {
       if (saved) {
         const parsed = sanitizeWalletList(JSON.parse(saved));
         if (parsed.length > 0) {
-          setWallets(parsed);
-          lastSyncedSignatureRef.current = getWalletsSignature(parsed);
+          const sig = getWalletsSignature(parsed);
+          if (hydratedUserIdRef.current !== user.id || lastSyncedSignatureRef.current !== sig) {
+            queueMicrotask(() => {
+              setWallets(parsed);
+            });
+            lastSyncedSignatureRef.current = sig;
+          }
           return;
         }
       }
     } catch {}
 
     // Fallback if brand new user without serverWallets yet
-    setWallets([]);
-  }, [user?.id, user?.isDemo, serverWallets]);
+    if (wallets.length > 0) {
+      queueMicrotask(() => {
+        setWallets([]);
+      });
+    }
+  }, [user, serverWallets, wallets.length, getWalletsSignature]);
 
   // Persist wallets to localStorage and sync to SQLite database on the server
   useEffect(() => {
@@ -220,40 +246,53 @@ function TrackerMain() {
 
     lastSyncedSignatureRef.current = currentSig;
     syncWalletsToServer(wallets);
-  }, [wallets, user?.id, user?.isDemo, syncWalletsToServer]);
+  }, [wallets, user, syncWalletsToServer, getWalletsSignature]);
+
+  const unhydratedWalletsKey = useMemo(() => {
+    return wallets
+      .filter(w => !w.isSynced && (!w.assets || w.assets.length === 0))
+      .map(w => `${w.chain}-${w.address}`)
+      .join(',');
+  }, [wallets]);
 
   // Auto-sync live on-chain balances for any newly added wallets without assets
   useEffect(() => {
-    const unhydrated = wallets.filter(w => !w.isSynced && (!w.assets || w.assets.length === 0));
-    if (unhydrated.length > 0) {
-      let isMounted = true;
-      setIsRefreshing(true);
-      Promise.all(
-        wallets.map(async (w) => {
-          if (!w.isSynced && (!w.assets || w.assets.length === 0)) {
-            try {
-              const liveAssets = await fetchLiveWalletAssets(w.chain, w.address, w.privateKey);
-              return {
-                ...w,
-                assets: liveAssets || [],
-                isSynced: true
-              };
-            } catch (err) {
-              console.warn(`Sync failed for ${w.chain} wallet ${w.address}:`, err);
-              return { ...w, isSynced: true };
+    if (!unhydratedWalletsKey) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        if (isMounted) setIsRefreshing(true);
+        const updated = await Promise.all(
+          wallets.map(async (w) => {
+            if (!w.isSynced && (!w.assets || w.assets.length === 0)) {
+              try {
+                const liveAssets = await fetchLiveWalletAssets(w.chain, w.address, w.privateKey);
+                return {
+                  ...w,
+                  assets: liveAssets || [],
+                  isSynced: true
+                };
+              } catch (err) {
+                console.warn(`Sync failed for ${w.chain} wallet ${w.address}:`, err);
+                return { ...w, isSynced: true };
+              }
             }
-          }
-          return w;
-        })
-      ).then(updated => {
+            return w;
+          })
+        );
         if (isMounted) {
           setWallets(updated);
-          setIsRefreshing(false);
         }
-      });
-      return () => { isMounted = false; };
-    }
-  }, [wallets.map(w => `${w.chain}-${w.address}`).join(',')]);
+      } finally {
+        if (isMounted) setIsRefreshing(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [unhydratedWalletsKey, wallets]);
 
   // Initial live market price fetch from Hyperliquid & co
   useEffect(() => {
@@ -570,7 +609,7 @@ function TrackerMain() {
               <span className="pulse-dot green"></span>
               <span>All Reef Indexers Nominal</span>
             </div>
-            <span className="footer-copy">&copy; {new Date().getFullYear()} TurtleTrack</span>
+            <span className="footer-copy">&copy; {CURRENT_YEAR} TurtleTrack</span>
           </div>
         </div>
       </footer>

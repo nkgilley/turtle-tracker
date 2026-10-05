@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Wallet, Copy, Check, Trash2, ExternalLink, AlertCircle, Sparkles, CheckCircle2, Loader2, KeyRound, ShieldCheck } from 'lucide-react';
 import { SUPPORTED_CHAINS } from '../data/mockData';
 import { validateCryptoAddress, detectChainFromAddress, fetchLiveWalletAssets } from '../services/cryptoService';
 
-export function WalletManagerModal({ 
-  isOpen, 
+function WalletManagerDialog({ 
   onClose, 
   wallets, 
   onAddWallet, 
@@ -23,23 +22,6 @@ export function WalletManagerModal({
   const [successMsg, setSuccessMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setError('');
-      setSuccessMsg('');
-      if (initialChain === 'COINBASE') {
-        setConnectionType('coinbase');
-        setActiveTab('add');
-      } else if (initialChain) {
-        setConnectionType('web3');
-        setChain(initialChain);
-        setActiveTab('add');
-      }
-    }
-  }, [isOpen, initialChain]);
-
-  if (!isOpen) return null;
 
   const handleAddressChange = (val) => {
     setAddress(val);
@@ -491,3 +473,28 @@ export function WalletManagerModal({
     </div>
   );
 }
+
+export function WalletManagerModal({ 
+  isOpen, 
+  onClose, 
+  wallets, 
+  onAddWallet, 
+  onDeleteWallet, 
+  onResetDemo, 
+  initialChain = 'ETH' 
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <WalletManagerDialog
+      key={initialChain}
+      onClose={onClose}
+      wallets={wallets}
+      onAddWallet={onAddWallet}
+      onDeleteWallet={onDeleteWallet}
+      onResetDemo={onResetDemo}
+      initialChain={initialChain}
+    />
+  );
+}
+

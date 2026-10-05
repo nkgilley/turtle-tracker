@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, ShieldCheck, Flame, ArrowUpRight, DollarSign, PieChart, Layers } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShieldCheck, Flame, DollarSign, PieChart, Layers } from 'lucide-react';
 
 export function PortfolioSummary({ metrics, activeTab, setActiveTab }) {
   const isPositive = metrics.total24hChangeValue >= 0;

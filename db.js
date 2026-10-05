@@ -265,7 +265,7 @@ export function saveUserWallets(userId, walletList) {
       if (!w || !w.address) continue;
       const walletId = w.id || `w-${w.chain?.toLowerCase() || 'custom'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
       const assetsJson = JSON.stringify(w.assets || []);
-      const { id, label, chain, address, color, isPrimary, assets, createdAt, ...rest } = w;
+      const { id: _id, label, chain, address, color, isPrimary, assets: _assets, createdAt, ...rest } = w;
       const rawJson = JSON.stringify(rest || {});
       const cAt = createdAt || new Date().toISOString().split('T')[0];
 
